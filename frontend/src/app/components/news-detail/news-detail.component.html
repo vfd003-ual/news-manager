@@ -1,0 +1,48 @@
+<!-- src/app/components/news-detail/news-detail.component.html -->
+<div class="news-detail-container">
+  <div class="navigation-bar">
+    <button class="back-button" (click)="goBack()">
+      ← Volver a noticias
+    </button>
+    
+    <button 
+      class="save-button" 
+      [class.saved]="isSaved"
+      (click)="toggleSave()"
+    >
+      {{ isSaved ? 'Guardada' : 'Guardar' }}
+    </button>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">Cargando noticia...</div>
+  
+  <div class="error-message" *ngIf="error">{{ error }}</div>
+  
+  <div class="news-content" *ngIf="news && !isLoading">
+    <h1>{{ news.title }}</h1>
+    
+    <div class="news-metadata">
+      <span class="source">{{ news.source.name }}</span>
+      <span class="date">{{ news.publishedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+      <span class="author" *ngIf="news.author">Por: {{ news.author }}</span>
+    </div>
+    
+    <div class="news-image" *ngIf="news.urlToImage">
+      <img [src]="news.urlToImage" [alt]="news.title">
+    </div>
+    
+    <div class="news-description">
+      {{ news.description }}
+    </div>
+    
+    <div class="news-content">
+      {{ news.content }}
+    </div>
+    
+    <div class="news-link" *ngIf="news.url">
+      <a [href]="news.url" target="_blank" rel="noopener noreferrer">
+        Leer artículo completo
+      </a>
+    </div>
+  </div>
+</div>

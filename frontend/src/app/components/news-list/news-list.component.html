@@ -1,0 +1,39 @@
+<div class="news-container">
+  <div class="filter-section">
+    <app-news-filter (filterChange)="onFilterChange($event)"></app-news-filter>
+  </div>
+  
+  <div class="news-list">
+    <h2>Últimas Noticias</h2>
+    
+    <div *ngIf="loading" class="loading">
+      <p>Cargando noticias...</p>
+    </div>
+    
+    <div *ngIf="!loading && news.length === 0" class="no-results">
+      <p>No se encontraron noticias que coincidan con tus criterios.</p>
+    </div>
+    
+    <div *ngIf="!loading && news.length > 0" class="news-grid">
+      <div *ngFor="let item of news" class="news-card">
+        <div class="news-image">
+          <img [src]="item.urlToImage || 'assets/images/placeholder.jpg'" [alt]="item.title">
+        </div>
+        <div class="news-content">
+          <div class="news-category">{{ item.source.name }}</div>
+          <h3 class="news-title">{{ item.title }}</h3>
+          <p class="news-description">{{ item.description }}</p>
+          <div class="news-meta">
+            <span class="news-source">{{ item.source.name }}</span>
+            <span class="news-date">{{ item.publishedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="news-actions">
+            <button class="btn-view" [routerLink]="['/news', item.url]">Leer Más</button>
+            <button class="btn-save" *ngIf="!item.isSaved" (click)="saveNews(item)">Guardar</button>
+            <button class="btn-unsave" *ngIf="item.isSaved" (click)="unsaveNews(item.url)">Quitar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,18 @@
+<header class="header">
+  <div class="logo">
+    <span>NewsApp</span>
+  </div>
+  
+  <nav class="nav">
+    @if (isAuthenticated) {
+      <ul class="nav-links">
+        <li><a routerLink="/news" routerLinkActive="active">Noticias</a></li>
+        <li><a routerLink="/profile" routerLinkActive="active">Mi Perfil</a></li>
+        <li class="user-greeting">Hola, {{ userName }}</li>
+      </ul>
+      <div class="logout-container">
+        <a href="javascript:void(0)" (click)="logout()">Cerrar Sesión</a>
+      </div>
+    }
+  </nav>
+</header>
