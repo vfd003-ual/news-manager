@@ -1,7 +1,9 @@
 <div class="news-container">
   <div class="filter-section">
-    <app-news-filter (filterChange)="onFilterChange($event)"></app-news-filter>
-  </div>
+    <app-news-filter 
+      [sources]="sources"
+      (filterChange)="onFilterChange($event)">
+    </app-news-filter>  </div>
   
   <div class="news-list">
     <h2>Últimas Noticias</h2>

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, Input } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { NewsFilter } from '../../models/news.model';
@@ -12,12 +12,12 @@ import { NewsFilter } from '../../models/news.model';
 })
 export class NewsFilterComponent implements OnInit {
   @Output() filterChange = new EventEmitter<NewsFilter>();
+  @Input() sources: string[] = [];
   
   filterForm: FormGroup;
   
   constructor(private fb: FormBuilder) {
     this.filterForm = this.fb.group({
-      category: [''],
       source: [''],
       searchTerm: ['']
     });

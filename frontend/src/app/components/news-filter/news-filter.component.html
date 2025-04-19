@@ -6,15 +6,9 @@
         <label for="source">Fuente</label>
         <select id="source" formControlName="source">
           <option value="">Todas las Fuentes</option>
-          <option value="TechNews">TechNews</option>
-          <option value="ScienceDaily">ScienceDaily</option>
-          <option value="BusinessInsider">BusinessInsider</option>
-          <option value="HealthToday">HealthToday</option>
-          <option value="EntertainmentWeekly">EntertainmentWeekly</option>
-          <option value="SportsCentral">SportsCentral</option>
-          <option value="PoliticsNow">PoliticsNow</option>
-          <option value="WorldNews">WorldNews</option>
-          <option value="FinanceDaily">FinanceDaily</option>
+          <option *ngFor="let source of sources" [value]="source">
+            {{source}}
+          </option>
         </select>
       </div>
 

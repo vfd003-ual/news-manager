@@ -19,6 +19,7 @@ import { NewsService } from '../../services/news.service';
 export class NewsListComponent implements OnInit {
   allNews: News[] = []; // Array con todas las noticias
   news: News[] = []; // Array con las noticias filtradas
+  sources: string[] = []; // Nueva propiedad para almacenar las fuentes
   loading = true;
   currentFilter: NewsFilter = {};
   
@@ -35,6 +36,11 @@ export class NewsListComponent implements OnInit {
         console.log('Datos recibidos:', data); // Para debug
         this.allNews = Array.isArray(data) ? data : (data?.articles || []);
         this.news = [...this.allNews]; // Inicialmente mostramos todas las noticias
+        this.sources = Array.from(new Set(
+          this.allNews
+            .map(news => news.source?.name)
+            .filter(source => source != null) as string[]
+        )).sort();
         this.loading = false;
         console.log('Noticias procesadas:', this.news); // Para debug
       },
