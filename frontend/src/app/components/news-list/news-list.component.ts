@@ -27,25 +27,30 @@ export class NewsListComponent implements OnInit {
     this.loadNews();
   }
   
+  onFilterChange(filter: NewsFilter): void {
+    console.log('Filtros aplicados:', filter);
+    this.currentFilter = filter;
+    this.loadNews();
+  }
+
   loadNews(): void {
     this.loading = true;
     this.newsService.getNews(this.currentFilter).subscribe({
       next: (data) => {
-        this.news = data;
+        console.log('Datos recibidos:', data); // Para debug
+        this.news = Array.isArray(data) ? data : (data?.articles || []); // Manejo de diferentes formatos
         this.loading = false;
-        console.log('Noticias cargadas:', this.news); // Para debug
+        console.log('Noticias procesadas:', this.news); // Para debug
       },
       error: (error) => {
         console.error('Error al cargar noticias:', error);
         this.loading = false;
+        this.news = [];
       }
     });
   }
   
-  onFilterChange(filter: NewsFilter): void {
-    this.currentFilter = filter;
-    this.loadNews();
-  }
+  
   
   saveNews(news: News): void {
     this.newsService.toggleSaveNews(news.url, true).subscribe({

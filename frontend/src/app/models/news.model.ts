@@ -1,9 +1,15 @@
+export interface NewsApiResponse {
+  articles: News[];
+  status: string;
+  totalResults: number;
+}
+
 export interface News {
   source: {
     id: string | null;
     name: string;
   };
-  author: string | null;
+  author: string;
   title: string;
   description: string;
   url: string;
