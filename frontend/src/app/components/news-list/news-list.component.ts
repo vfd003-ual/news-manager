@@ -17,7 +17,8 @@ import { NewsService } from '../../services/news.service';
   styleUrls: ['./news-list.component.scss']
 })
 export class NewsListComponent implements OnInit {
-  news: News[] = [];
+  allNews: News[] = []; // Array con todas las noticias
+  news: News[] = []; // Array con las noticias filtradas
   loading = true;
   currentFilter: NewsFilter = {};
   
@@ -26,19 +27,14 @@ export class NewsListComponent implements OnInit {
   ngOnInit(): void {
     this.loadNews();
   }
-  
-  onFilterChange(filter: NewsFilter): void {
-    console.log('Filtros aplicados:', filter);
-    this.currentFilter = filter;
-    this.loadNews();
-  }
 
   loadNews(): void {
     this.loading = true;
-    this.newsService.getNews(this.currentFilter).subscribe({
+    this.newsService.getNews().subscribe({
       next: (data) => {
         console.log('Datos recibidos:', data); // Para debug
-        this.news = Array.isArray(data) ? data : (data?.articles || []); // Manejo de diferentes formatos
+        this.allNews = Array.isArray(data) ? data : (data?.articles || []);
+        this.news = [...this.allNews]; // Inicialmente mostramos todas las noticias
         this.loading = false;
         console.log('Noticias procesadas:', this.news); // Para debug
       },
@@ -50,7 +46,29 @@ export class NewsListComponent implements OnInit {
     });
   }
   
-  
+  onFilterChange(filter: NewsFilter): void {
+    this.applyLocalFilter(filter);
+  }
+
+  private applyLocalFilter(filter: NewsFilter): void {
+    let filteredNews = [...this.allNews];
+
+    if (filter.source) {
+      filteredNews = filteredNews.filter(news => 
+        news.source?.name === filter.source
+      );
+    }
+
+    if (filter.searchTerm) {
+      const searchTerm = filter.searchTerm.toLowerCase();
+      filteredNews = filteredNews.filter(news =>
+        (news.title?.toLowerCase().includes(searchTerm) ?? false) ||
+        (news.description?.toLowerCase().includes(searchTerm) ?? false)
+      );
+    }
+
+    this.news = filteredNews;
+  }
   
   saveNews(news: News): void {
     this.newsService.toggleSaveNews(news.url, true).subscribe({

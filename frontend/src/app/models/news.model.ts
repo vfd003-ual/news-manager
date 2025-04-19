@@ -20,10 +20,7 @@ export interface News {
 }
 
 export interface NewsFilter {
-  category?: string;
   source?: string;
-  dateFrom?: string;
-  dateTo?: string;
   searchTerm?: string;
 }
   
