@@ -69,8 +69,8 @@ export class NewsDetailComponent implements OnInit {
     if (!this.news) return;
     
     const action = this.isSaved ? 
-      this.newsService.toggleSaveNews(this.news.url, false) :
-      this.newsService.toggleSaveNews(this.news.url, true);
+      this.newsService.toggleSaveNews(this.news, false) :
+      this.newsService.toggleSaveNews(this.news, true);
 
     action.subscribe({
       next: () => {

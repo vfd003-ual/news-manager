@@ -21,53 +21,6 @@
   </div>
 
   <div class="profile-card">
-    <h2>Mis preferencias</h2>
-    <form [formGroup]="preferencesForm" (ngSubmit)="savePreferences()">
-      <div class="preferences-section">
-        <h3>Categorías de interés</h3>
-        <div class="checkbox-group">
-          @for (category of availableCategories; track category) {
-            <div class="checkbox-item">
-              <input 
-                type="checkbox" 
-                [id]="'category-' + category" 
-                [checked]="isSelectedCategory(category)"
-                (change)="onCategoryChange(category, $event)"
-              >
-              <label [for]="'category-' + category">{{ category }}</label>
-            </div>
-          }
-        </div>
-      </div>
-
-      <div class="preferences-section">
-        <h3>Fuentes preferidas</h3>
-        <div class="checkbox-group">
-          @for (source of availableSources; track source) {
-            <div class="checkbox-item">
-              <input 
-                type="checkbox" 
-                [id]="'source-' + source" 
-                [checked]="isSelectedSource(source)"
-                (change)="onSourceChange(source, $event)"
-              >
-              <label [for]="'source-' + source">{{ source }}</label>
-            </div>
-          }
-        </div>
-      </div>
-
-      <div class="form-footer">
-        <div class="message success" *ngIf="successMessage">{{ successMessage }}</div>
-        <div class="message error" *ngIf="errorMessage">{{ errorMessage }}</div>
-        <button type="submit" class="btn-primary" [disabled]="loading">
-          {{ loading ? 'Guardando...' : 'Guardar preferencias' }}
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <div class="profile-card">
     <h2>Noticias guardadas</h2>
     <div class="saved-news-info" *ngIf="user">
       <p *ngIf="user.preferences.savedNews.length === 0">

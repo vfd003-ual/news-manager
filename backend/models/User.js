@@ -16,9 +16,20 @@ const UserSchema = new mongoose.Schema({
     required: true
   },
   preferences: {
-    categories: [String],
-    sources: [String],
-    savedNews: [String]
+    savedNews: [{
+      url: String,
+      title: String,
+      description: String,
+      publishedAt: Date,
+      source: {
+        name: String
+      },
+      urlToImage: String,
+      savedAt: { 
+        type: Date, 
+        default: Date.now 
+      }
+    }]
   },
   createdAt: {
     type: Date,

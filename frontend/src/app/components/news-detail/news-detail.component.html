@@ -21,7 +21,7 @@
     <header class="article-header">
       <h1>{{ news.title }}</h1>
       <div class="article-meta">
-        <span class="source">{{ news.source?.name }}</span>
+        <span class="source">{{ news.source.name }}</span>
         <span class="date">{{ news.publishedAt | date:'dd/MM/yyyy HH:mm' }}</span>
         <span class="author" *ngIf="news.author">Por: {{ news.author }}</span>
       </div>

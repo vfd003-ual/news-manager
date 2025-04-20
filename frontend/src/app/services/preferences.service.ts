@@ -23,35 +23,6 @@ export class PreferencesService {
     });
   }
 
-  // Obtener todas las preferencias
-  getPreferences(): Observable<any> {
-    return this.http.get(this.apiUrl, { headers: this.getHeaders() }).pipe(
-      catchError(error => throwError(() => error))
-    );
-  }
-
-  // Actualizar categorías
-  updateCategories(categories: string[]): Observable<any> {
-    return this.http.put(
-      `${this.apiUrl}/categories`, 
-      { categories }, 
-      { headers: this.getHeaders() }
-    ).pipe(
-      catchError(error => throwError(() => error))
-    );
-  }
-
-  // Actualizar fuentes
-  updateSources(sources: string[]): Observable<any> {
-    return this.http.put(
-      `${this.apiUrl}/sources`, 
-      { sources }, 
-      { headers: this.getHeaders() }
-    ).pipe(
-      catchError(error => throwError(() => error))
-    );
-  }
-
   // Guardar/eliminar noticia
   toggleSaveNews(newsId: string, save: boolean): Observable<any> {
     return this.http.put(
