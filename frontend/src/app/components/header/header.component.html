@@ -6,8 +6,9 @@
   <nav class="nav">
     @if (isAuthenticated) {
       <ul class="nav-links">
-        <li><a routerLink="/news" routerLinkActive="active">Noticias</a></li>
+        <li><a routerLink="/news" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Noticias</a></li>
         <li><a routerLink="/profile" routerLinkActive="active">Mi Perfil</a></li>
+        <li><a routerLink="/saved-news" routerLinkActive="active">Noticias Guardadas</a></li>
         <li class="user-greeting">Hola, {{ userName }}</li>
       </ul>
       <div class="logout-container">
