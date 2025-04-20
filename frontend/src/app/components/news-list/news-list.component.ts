@@ -35,7 +35,8 @@ export class NewsListComponent implements OnInit {
       next: (data) => {
         console.log('Datos recibidos:', data); // Para debug
         this.allNews = Array.isArray(data) ? data : (data?.articles || []);
-        this.news = [...this.allNews]; // Inicialmente mostramos todas las noticias
+        this.news = [...this.allNews];
+        this.newsService.setCurrentNews(this.news);
         this.sources = Array.from(new Set(
           this.allNews
             .map(news => news.source?.name)
@@ -77,11 +78,16 @@ export class NewsListComponent implements OnInit {
   }
   
   saveNews(news: News): void {
-    this.newsService.toggleSaveNews(news.url, true).subscribe({
+    this.newsService.toggleSaveNews(news, true).subscribe({
       next: () => {
         const index = this.news.findIndex(n => n.url === news.url);
         if (index !== -1) {
           this.news[index] = { ...this.news[index], isSaved: true };
+          // También actualizamos el array original
+          const allNewsIndex = this.allNews.findIndex(n => n.url === news.url);
+          if (allNewsIndex !== -1) {
+            this.allNews[allNewsIndex] = { ...this.allNews[allNewsIndex], isSaved: true };
+          }
         }
       },
       error: (error) => {
@@ -90,12 +96,17 @@ export class NewsListComponent implements OnInit {
     });
   }
   
-  unsaveNews(newsUrl: string): void {
-    this.newsService.toggleSaveNews(newsUrl, false).subscribe({
+  unsaveNews(news: News): void {
+    this.newsService.toggleSaveNews(news, false).subscribe({
       next: () => {
-        const index = this.news.findIndex(n => n.url === newsUrl);
+        const index = this.news.findIndex(n => n.url === news.url);
         if (index !== -1) {
           this.news[index] = { ...this.news[index], isSaved: false };
+          // También actualizamos el array original
+          const allNewsIndex = this.allNews.findIndex(n => n.url === news.url);
+          if (allNewsIndex !== -1) {
+            this.allNews[allNewsIndex] = { ...this.allNews[allNewsIndex], isSaved: false };
+          }
         }
       },
       error: (error) => {

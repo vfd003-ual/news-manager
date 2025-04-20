@@ -16,34 +16,7 @@ export class UserProfileComponent implements OnInit {
   user: User | null = null
   loading = true
   saving = false
-  preferencesForm: FormGroup
 
-  availableCategories = [
-    "Tecnología",
-    "Ciencia",
-    "Negocios",
-    "Salud",
-    "Entretenimiento",
-    "Deportes",
-    "Política",
-    "Medio Ambiente",
-    "Finanzas",
-  ]
-
-  availableSources = [
-    "TechNews",
-    "ScienceDaily",
-    "BusinessInsider",
-    "HealthToday",
-    "EntertainmentWeekly",
-    "SportsCentral",
-    "PoliticsNow",
-    "WorldNews",
-    "FinanceDaily",
-  ]
-
-  selectedCategories: string[] = []
-  selectedSources: string[] = []
   successMessage: string = '';
   errorMessage: string = '';
 
@@ -51,9 +24,6 @@ export class UserProfileComponent implements OnInit {
     private authService: AuthService,
     private fb: FormBuilder,
   ) {
-    this.preferencesForm = this.fb.group({
-      // El formulario se gestiona manualmente a través de checkboxes
-    })
   }
 
   ngOnInit(): void {
@@ -67,8 +37,6 @@ export class UserProfileComponent implements OnInit {
       next: (data: User) => {
         this.user = data;
         // Verificamos que existan las propiedades antes de acceder a ellas
-        this.selectedCategories = data.preferences?.favoriteCategories || [];
-        this.selectedSources = data.preferences?.favoriteSources || [];
         this.loading = false;
       },
       error: (error: Error) => {
@@ -79,60 +47,6 @@ export class UserProfileComponent implements OnInit {
     });
   }
 
-  isSelectedCategory(category: string): boolean {
-    return this.selectedCategories.includes(category)
-  }
-
-  isSelectedSource(source: string): boolean {
-    return this.selectedSources.includes(source)
-  }
-
-  onCategoryChange(category: string, event: Event): void {
-    const checkbox = event.target as HTMLInputElement;
-    if (checkbox.checked) {
-      if (!this.selectedCategories.includes(category)) {
-        this.selectedCategories.push(category);
-      }
-    } else {
-      this.selectedCategories = this.selectedCategories.filter(c => c !== category);
-    }
-  }
-
-  onSourceChange(source: string, event: Event): void {
-    const checkbox = event.target as HTMLInputElement;
-    if (checkbox.checked) {
-      if (!this.selectedSources.includes(source)) {
-        this.selectedSources.push(source);
-      }
-    } else {
-      this.selectedSources = this.selectedSources.filter(s => s !== source);
-    }
-  }
-
-  savePreferences(): void {
-    if (!this.user) return
-
-    this.saving = true
-
-    const preferences = {
-      favoriteCategories: this.selectedCategories,
-      favoriteSources: this.selectedSources,
-    }
-
-    this.authService.updateUserPreferences(preferences).subscribe({
-      next: (updatedUser: User) => {
-        this.user = updatedUser;
-        this.saving = false;
-        alert("¡Preferencias guardadas correctamente!");
-        this.successMessage = "¡Preferencias guardadas correctamente!";
-      },
-      error: (error: Error) => {
-        console.error("Error al guardar preferencias:", error);
-        this.saving = false;
-        alert("Error al guardar preferencias. Por favor, inténtalo de nuevo.");
-        this.errorMessage = "Error al guardar preferencias. Por favor, inténtalo de nuevo.";
-      },
-    })
-  }
+  
 }
 

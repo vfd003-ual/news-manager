@@ -3,66 +3,62 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const User = require('../models/User');
 
-// Ruta GET /api/preferences - Obtener preferencias del usuario
-router.get('/', auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select('preferences');
-    res.json(user.preferences);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Error del servidor');
-  }
-});
-
-// Ruta PUT /api/preferences/categories - Actualizar categorías
-router.put('/categories', auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    user.preferences.categories = req.body.categories;
-    await user.save();
-    res.json(user.preferences);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Error del servidor');
-  }
-});
-
-// Ruta PUT /api/preferences/sources - Actualizar fuentes
-router.put('/sources', auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    user.preferences.sources = req.body.sources;
-    await user.save();
-    res.json(user.preferences);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Error del servidor');
-  }
-});
-
 // Ruta PUT /api/preferences/saved-news - Guardar/eliminar noticias
+// Ruta PUT /api/preferences/saved-news
 router.put('/saved-news', auth, async (req, res) => {
   try {
+    console.log('PUT /saved-news - Request received:', {
+      userId: req.user.id,
+      action: req.body.save ? 'save' : 'remove',
+      newsUrl: req.body.news.url
+    });
+
     const user = await User.findById(req.user.id);
-    
-    const { newsId, save } = req.body;
+    const { news, save } = req.body;
     
     if (save) {
-      // Añadir noticia si no existe
-      if (!user.preferences.savedNews.includes(newsId)) {
-        user.preferences.savedNews.push(newsId);
+      const newsExists = user.preferences.savedNews.some(n => n.url === news.url);
+      console.log('Checking if news exists:', { exists: newsExists, url: news.url });
+      
+      if (!newsExists) {
+        user.preferences.savedNews.push({
+          url: news.url,
+          title: news.title,
+          description: news.description,
+          publishedAt: news.publishedAt,
+          source: news.source,
+          urlToImage: news.urlToImage
+        });
+        console.log('News added to saved list');
       }
     } else {
-      // Eliminar noticia
+      const beforeLength = user.preferences.savedNews.length;
       user.preferences.savedNews = user.preferences.savedNews.filter(
-        id => id !== newsId
+        n => n.url !== news.url
       );
+      console.log('News removed from saved list:', {
+        removedCount: beforeLength - user.preferences.savedNews.length
+      });
     }
     
     await user.save();
+    console.log('User preferences saved successfully. Total saved news:', user.preferences.savedNews.length);
     res.json(user.preferences.savedNews);
   } catch (err) {
-    console.error(err.message);
+    console.error('Error in PUT /saved-news:', err.message);
+    res.status(500).send('Error del servidor');
+  }
+});
+
+// Obtener noticias guardadas
+router.get('/saved-news', auth, async (req, res) => {
+  try {
+    console.log('GET /saved-news - Request received for user:', req.user.id);
+    const user = await User.findById(req.user.id);
+    console.log('Found user saved news count:', user.preferences.savedNews.length);
+    res.json(user.preferences.savedNews);
+  } catch (err) {
+    console.error('Error in GET /saved-news:', err.message);
     res.status(500).send('Error del servidor');
   }
 });

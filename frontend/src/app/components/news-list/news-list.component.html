@@ -31,8 +31,8 @@
           </div>
           <div class="news-actions">
             <button class="btn-view" [routerLink]="['/news', item.url]">Leer Más</button>
-            <button class="btn-save" *ngIf="!item.isSaved" (click)="saveNews(item)">Guardar</button>
-            <button class="btn-unsave" *ngIf="item.isSaved" (click)="unsaveNews(item.url)">Quitar</button>
+                        <button class="btn-save" *ngIf="!item.isSaved" (click)="saveNews(item)">Guardar</button>
+            <button class="btn-unsave" *ngIf="item.isSaved" (click)="unsaveNews(item)">Quitar</button>
           </div>
         </div>
       </div>

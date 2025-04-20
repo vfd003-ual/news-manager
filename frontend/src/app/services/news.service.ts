@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject, of } from 'rxjs';
+import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { News } from '../models/news.model';
@@ -10,30 +10,34 @@ import { NewsFilter } from '../models/news.model';
   providedIn: 'root'
 })
 export class NewsService {
-  private apiUrl = 'http://localhost:3000/api/news'; // ← Proxy en tu backend
+  private apiUrl = 'http://localhost:3000/api'; // ← Proxy en tu backend
   private savedNewsSubject = new BehaviorSubject<string[]>([]);
   public savedNews$ = this.savedNewsSubject.asObservable();
+  private currentNews: News[] = [];
+
+  private newsSubject = new BehaviorSubject<News[]>([]);
+  public news$ = this.newsSubject.asObservable();
+  private hasLoadedNews = false;
 
   constructor(
     private http: HttpClient,
     private authService: AuthService
-  ) {
-    this.authService.user$.subscribe(user => {
-      if (user) {
-        this.savedNewsSubject.next(user.preferences.savedNews || []);
-      } else {
-        this.savedNewsSubject.next([]);
-      }
-    });
-  }
+  ) {}
 
   // Nuevo formato de headers usando 'Authorization'
   private getHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'x-auth-token': this.authService.getToken() || ''
+    });
   }
 
   getNews(params: any = {}): Observable<any> {
+    
+    if (this.hasLoadedNews) {
+      return of({ articles: this.currentNews });
+    }
+    
     let httpParams = new HttpParams();
 
     if (params.category) httpParams = httpParams.set('category', params.category);
@@ -42,7 +46,7 @@ export class NewsService {
     if (params.toDate)   httpParams = httpParams.set('to', params.toDate);
     if (params.query)    httpParams = httpParams.set('q', params.query);
 
-    return this.http.get(`${this.apiUrl}`, {
+    return this.http.get(`${this.apiUrl}/news`, {
       headers: this.getHeaders(),
       params: httpParams
     }).pipe(
@@ -53,7 +57,19 @@ export class NewsService {
     );
   }
 
-  getNewsById(id: string): Observable<any> {
+  setCurrentNews(news: News[]) {
+    this.currentNews = news;
+  }
+
+  getCurrentNews(): News[] {
+    return this.currentNews;
+  }
+
+  getNewsByUrl(url: string): News | undefined {
+    return this.currentNews.find(news => news.url === url);
+  }
+
+  /* getNewsById(id: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/${id}`, {
       headers: this.getHeaders()
     }).pipe(
@@ -62,46 +78,62 @@ export class NewsService {
         return of(null);
       })
     );
-  }
+  } */
 
-  toggleSaveNews(newsId: string, save: boolean): Observable<string[]> {
-    if (this.authService.getToken()) {
-      return this.http.put<any>(
-        'http://localhost:3000/api/preferences/saved-news',
-        { newsId, save },
-        { headers: this.getHeaders() }
-      ).pipe(
-        tap(savedNews => this.savedNewsSubject.next(savedNews)),
-        catchError(error => {
-          console.error('Error actualizando noticia guardada:', error);
-          return of(this.savedNewsSubject.value);
-        })
-      );
-    } else {
-      const currentSaved = [...this.savedNewsSubject.value];
-      const updatedSaved = save
-        ? currentSaved.includes(newsId) ? currentSaved : [...currentSaved, newsId]
-        : currentSaved.filter(id => id !== newsId);
+  toggleSaveNews(news: News, save: boolean): Observable<News[]> {
+    console.log('Intentando', save ? 'guardar' : 'quitar', 'noticia:', {
+      title: news.title,
+      url: news.url,
+      currentState: save
+    });
 
-      this.savedNewsSubject.next(updatedSaved);
-      return of(updatedSaved);
-    }
-  }
-
-  isNewsSaved(newsId: string): Observable<boolean> {
-    return this.savedNews$.pipe(
-      map(savedNews => savedNews.includes(newsId))
+    return this.http.put<News[]>(
+      `${this.apiUrl}/preferences/saved-news`,
+      { news, save },
+      { headers: this.getHeaders() }
+    ).pipe(
+      tap(savedNews => {
+        console.log('Respuesta del servidor:', savedNews);
+        // ...existing code...
+        const currentNews = [...this.currentNews];
+        const index = currentNews.findIndex(n => n.url === news.url);
+        if (index !== -1) {
+          currentNews[index] = { ...currentNews[index], isSaved: save };
+          this.currentNews = currentNews;
+          this.newsSubject.next(currentNews);
+          console.log('Estado local actualizado:', {
+            newsIndex: index,
+            isSaved: save,
+            totalNews: currentNews.length
+          });
+        }
+      }),
+      catchError(error => {
+        console.error('Error al guardar/quitar noticia:', error);
+        return throwError(() => error);
+      })
     );
   }
 
-  getSavedNews(): Observable<any> {
-    return this.http.get('http://localhost:3000/api/preferences', {
-      headers: this.getHeaders()
-    }).pipe(
-      catchError(error => {
-        console.error('Error obteniendo noticias guardadas:', error);
-        return of({ savedNews: [] });
-      })
+  private updateNewsState(newsUrl: string, isSaved: boolean) {
+    const currentNews = this.currentNews;
+    this.currentNews = currentNews.map(news => 
+      news.url === newsUrl ? { ...news, isSaved } : news
+    );
+    this.newsSubject.next(this.currentNews);
+  }
+
+  isNewsSaved(url: string): Observable<boolean> {
+    return this.http.get<boolean>(
+      `${this.apiUrl}/preferences/saved-news/${encodeURIComponent(url)}`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  getSavedNews(): Observable<News[]> {
+    return this.http.get<News[]>(
+      `${this.apiUrl}/preferences/saved-news`,
+      { headers: this.getHeaders() }
     );
   }
 
