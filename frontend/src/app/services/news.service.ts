@@ -3,6 +3,8 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, of } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
+import { News } from '../models/news.model';
+import { NewsFilter } from '../models/news.model';
 
 @Injectable({
   providedIn: 'root'
@@ -101,5 +103,14 @@ export class NewsService {
         return of({ savedNews: [] });
       })
     );
+  }
+
+  getFilteredNews(filter: NewsFilter): Observable<News[]> {
+    return this.http.get<News[]>(`${this.apiUrl}/news`, {
+      params: {
+        ...(filter.source && { source: filter.source }),
+        ...(filter.searchTerm && { search: filter.searchTerm })
+      }
+    });
   }
 }

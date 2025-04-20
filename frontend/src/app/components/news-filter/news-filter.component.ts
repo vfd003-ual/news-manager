@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, Input } from '@angular/core';
 import { CommonModule } from '@angular/common'; 
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { NewsFilter } from '../../models/news.model';
@@ -12,15 +12,13 @@ import { NewsFilter } from '../../models/news.model';
 })
 export class NewsFilterComponent implements OnInit {
   @Output() filterChange = new EventEmitter<NewsFilter>();
+  @Input() sources: string[] = [];
   
   filterForm: FormGroup;
   
   constructor(private fb: FormBuilder) {
     this.filterForm = this.fb.group({
-      category: [''],
       source: [''],
-      dateFrom: [null],
-      dateTo: [null],
       searchTerm: ['']
     });
   }
@@ -30,10 +28,7 @@ export class NewsFilterComponent implements OnInit {
   
   applyFilter(): void {
     const filter: NewsFilter = {
-      category: this.filterForm.value.category || undefined,
       source: this.filterForm.value.source || undefined,
-      dateFrom: this.filterForm.value.dateFrom || undefined,
-      dateTo: this.filterForm.value.dateTo || undefined,
       searchTerm: this.filterForm.value.searchTerm || undefined
     };
     
@@ -42,10 +37,7 @@ export class NewsFilterComponent implements OnInit {
   
   resetFilter(): void {
     this.filterForm.reset({
-      category: '',
       source: '',
-      dateFrom: null,
-      dateTo: null,
       searchTerm: ''
     });
     
