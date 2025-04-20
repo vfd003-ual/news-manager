@@ -1,11 +1,9 @@
-// src/app/components/news-detail/news-detail.component.ts
-// Añadir funcionalidades de guardar artículos
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NewsService } from '../../services/news.service';
 import { AuthService } from '../../services/auth.service';
+import { News } from '../../models/news.model';
 
 @Component({
   selector: 'app-news-detail',
@@ -15,7 +13,7 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./news-detail.component.scss']
 })
 export class NewsDetailComponent implements OnInit {
-  news: any = null;
+  news: News | null = null;
   isLoading: boolean = true;
   error: string = '';
   isSaved: boolean = false;
@@ -29,31 +27,31 @@ export class NewsDetailComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.authService.isAuthenticated$.subscribe(isAuth => {
-      this.isAuthenticated = isAuth;
-    });
-
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.loadNewsDetail(id);
-      this.checkIfSaved(id);
-    } else {
-      this.router.navigate(['/news']);
-    }
-  }
-
-  loadNewsDetail(id: string) {
-    this.isLoading = true;
-    this.newsService.getNewsById(id).subscribe({
-      next: (data) => {
-        this.news = data;
-        this.isLoading = false;
-      },
-      error: () => {
-        this.error = 'No se pudo cargar la noticia';
-        this.isLoading = false;
+    this.route.params.subscribe(params => {
+      const url = params['url'];
+      if (url) {
+        this.loadNewsDetail(url);
+        this.checkIfSaved(url);
+      } else {
+        this.router.navigate(['/news']);
       }
     });
+  }
+
+  loadNewsDetail(url: string) {
+    this.isLoading = true;
+    
+    // Buscar la noticia en el estado actual
+    const foundNews = this.newsService.getNewsByUrl(url);
+    
+    if (foundNews) {
+      this.news = foundNews;
+      this.isLoading = false;
+    } else {
+      // Si no se encuentra en el estado actual, mostrar error
+      this.error = 'Noticia no encontrada';
+      this.isLoading = false;
+    }
   }
 
   checkIfSaved(id: string) {
@@ -68,17 +66,20 @@ export class NewsDetailComponent implements OnInit {
       return;
     }
 
-    const newsId = this.route.snapshot.paramMap.get('id');
-    if (newsId) {
-      this.newsService.toggleSaveNews(newsId, !this.isSaved).subscribe({
-        next: () => {
-          this.isSaved = !this.isSaved;
-        },
-        error: (error) => {
-          console.error('Error al guardar/eliminar noticia:', error);
-        }
-      });
-    }
+    if (!this.news) return;
+    
+    const action = this.isSaved ? 
+      this.newsService.toggleSaveNews(this.news.url, false) :
+      this.newsService.toggleSaveNews(this.news.url, true);
+
+    action.subscribe({
+      next: () => {
+        this.isSaved = !this.isSaved;
+      },
+      error: (error) => {
+        console.error('Error al guardar/quitar la noticia:', error);
+      }
+    });
   }
 
   goBack() {

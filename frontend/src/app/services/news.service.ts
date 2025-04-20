@@ -13,6 +13,11 @@ export class NewsService {
   private apiUrl = 'http://localhost:3000/api/news'; // ← Proxy en tu backend
   private savedNewsSubject = new BehaviorSubject<string[]>([]);
   public savedNews$ = this.savedNewsSubject.asObservable();
+  private currentNews: News[] = [];
+
+  private newsSubject = new BehaviorSubject<News[]>([]);
+  public news$ = this.newsSubject.asObservable();
+  private hasLoadedNews = false;
 
   constructor(
     private http: HttpClient,
@@ -34,6 +39,11 @@ export class NewsService {
   }
 
   getNews(params: any = {}): Observable<any> {
+    
+    if (this.hasLoadedNews) {
+      return of({ articles: this.currentNews });
+    }
+    
     let httpParams = new HttpParams();
 
     if (params.category) httpParams = httpParams.set('category', params.category);
@@ -53,7 +63,19 @@ export class NewsService {
     );
   }
 
-  getNewsById(id: string): Observable<any> {
+  setCurrentNews(news: News[]) {
+    this.currentNews = news;
+  }
+
+  getCurrentNews(): News[] {
+    return this.currentNews;
+  }
+
+  getNewsByUrl(url: string): News | undefined {
+    return this.currentNews.find(news => news.url === url);
+  }
+
+  /* getNewsById(id: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/${id}`, {
       headers: this.getHeaders()
     }).pipe(
@@ -62,7 +84,7 @@ export class NewsService {
         return of(null);
       })
     );
-  }
+  } */
 
   toggleSaveNews(newsId: string, save: boolean): Observable<string[]> {
     if (this.authService.getToken()) {

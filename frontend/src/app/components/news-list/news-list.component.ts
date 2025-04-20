@@ -35,7 +35,8 @@ export class NewsListComponent implements OnInit {
       next: (data) => {
         console.log('Datos recibidos:', data); // Para debug
         this.allNews = Array.isArray(data) ? data : (data?.articles || []);
-        this.news = [...this.allNews]; // Inicialmente mostramos todas las noticias
+        this.news = [...this.allNews];
+        this.newsService.setCurrentNews(this.news);
         this.sources = Array.from(new Set(
           this.allNews
             .map(news => news.source?.name)
