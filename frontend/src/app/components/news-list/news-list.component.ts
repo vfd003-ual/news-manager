@@ -4,14 +4,15 @@ import { RouterModule } from '@angular/router'; // Para routerLink
 import { NewsFilterComponent } from '../news-filter/news-filter.component'; // Importa el componente
 import { News, NewsFilter } from '../../models/news.model';
 import { NewsService } from '../../services/news.service';
-
+import { ScrollTopComponent } from '../scroll-top/scroll-top.component';
 @Component({
   selector: 'app-news-list',
   standalone: true,
   imports: [
     CommonModule, 
     RouterModule, 
-    NewsFilterComponent
+    NewsFilterComponent,
+    ScrollTopComponent
   ],
   templateUrl: './news-list.component.html',
   styleUrls: ['./news-list.component.scss']
