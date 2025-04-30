@@ -41,18 +41,33 @@ export class NewsDetailComponent implements OnInit {
   loadNewsDetail(url: string) {
     this.isLoading = true;
     
-    // Buscar la noticia en el estado actual
-    const foundNews = this.newsService.getNewsByUrl(url);
+    // Primero buscar en las noticias actuales
+    let foundNews = this.newsService.getNewsByUrl(url);
     
-    if (foundNews) {
+    if (!foundNews) {
+      // Si no se encuentra en las noticias actuales, buscar en las guardadas
+      this.newsService.getSavedNews().subscribe({
+        next: (savedNews) => {
+          foundNews = savedNews.find(news => news.url === url) ?? null;
+          if (foundNews) {
+            this.news = foundNews;
+            this.isLoading = false;
+          } else {
+            this.error = 'Noticia no encontrada';
+            this.isLoading = false;
+          }
+        },
+        error: (error) => {
+          console.error('Error al cargar noticias guardadas:', error);
+          this.error = 'Error al cargar la noticia';
+          this.isLoading = false;
+        }
+      });
+    } else {
       this.news = foundNews;
       this.isLoading = false;
-    } else {
-      // Si no se encuentra en el estado actual, mostrar error
-      this.error = 'Noticia no encontrada';
-      this.isLoading = false;
     }
-  }
+}
 
   checkIfSaved(id: string) {
     this.newsService.isNewsSaved(id).subscribe(isSaved => {

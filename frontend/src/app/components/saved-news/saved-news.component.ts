@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 import { News } from '../../models/news.model';
 import { NewsService } from '../../services/news.service';
 
@@ -14,7 +15,10 @@ export class SavedNewsComponent {
   savedNews: News[] = [];
   loading = true;
 
-  constructor(private newsService: NewsService) {}
+  constructor(
+    private newsService: NewsService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadSavedNews();

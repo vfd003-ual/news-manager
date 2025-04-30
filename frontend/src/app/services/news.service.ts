@@ -14,6 +14,7 @@ export class NewsService {
   private savedNewsSubject = new BehaviorSubject<string[]>([]);
   public savedNews$ = this.savedNewsSubject.asObservable();
   private currentNews: News[] = [];
+  private savedNewsCache: News[] = [];
 
   private newsSubject = new BehaviorSubject<News[]>([]);
   public news$ = this.newsSubject.asObservable();
@@ -65,8 +66,16 @@ export class NewsService {
     return this.currentNews;
   }
 
-  getNewsByUrl(url: string): News | undefined {
-    return this.currentNews.find(news => news.url === url);
+  getNewsByUrl(url: string): News | null {
+    // Buscar primero en las noticias actuales
+    let news = this.currentNews.find(n => n.url === url);
+    
+    // Si no se encuentra, buscar en las guardadas
+    if (!news && this.savedNewsCache.length > 0) {
+      news = this.savedNewsCache.find(n => n.url === url);
+    }
+    
+    return news || null;
   }
 
   /* getNewsById(id: string): Observable<any> {
@@ -115,14 +124,6 @@ export class NewsService {
     );
   }
 
-  private updateNewsState(newsUrl: string, isSaved: boolean) {
-    const currentNews = this.currentNews;
-    this.currentNews = currentNews.map(news => 
-      news.url === newsUrl ? { ...news, isSaved } : news
-    );
-    this.newsSubject.next(this.currentNews);
-  }
-
   isNewsSaved(url: string): Observable<boolean> {
     return this.http.get<boolean>(
       `${this.apiUrl}/preferences/saved-news/${encodeURIComponent(url)}`,
@@ -131,9 +132,12 @@ export class NewsService {
   }
 
   getSavedNews(): Observable<News[]> {
-    return this.http.get<News[]>(
-      `${this.apiUrl}/preferences/saved-news`,
-      { headers: this.getHeaders() }
+    return this.http.get<News[]>(`${this.apiUrl}/preferences/saved-news`, {
+      headers: this.getHeaders()
+    }).pipe(
+      tap(news => {
+        this.savedNewsCache = news; // Guardar en caché
+      })
     );
   }
 
