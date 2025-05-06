@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
+import { Observable, BehaviorSubject, of, throwError, forkJoin } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { News } from '../models/news.model';
@@ -14,6 +14,7 @@ export class NewsService {
   private savedNewsSubject = new BehaviorSubject<string[]>([]);
   public savedNews$ = this.savedNewsSubject.asObservable();
   private currentNews: News[] = [];
+  private savedNewsCache: News[] = [];
 
   private newsSubject = new BehaviorSubject<News[]>([]);
   public news$ = this.newsSubject.asObservable();
@@ -33,26 +34,27 @@ export class NewsService {
   }
 
   getNews(params: any = {}): Observable<any> {
-    
-    if (this.hasLoadedNews) {
-      return of({ articles: this.currentNews });
-    }
-    
-    let httpParams = new HttpParams();
+    return forkJoin([
+      this.http.get(`${this.apiUrl}/news`, {
+        params,
+        headers: this.getHeaders()
+      }),
+      this.getSavedNews()
+    ]).pipe(
+      map(([newsResponse, savedNews]) => {
+        const articles = (newsResponse as any).articles || [];
+        const savedUrls = new Set(savedNews.map(n => n.url));
+        
+        // Marcar las noticias que están guardadas
+        articles.forEach((article: News) => {
+          article.isSaved = savedUrls.has(article.url);
+        });
 
-    if (params.category) httpParams = httpParams.set('category', params.category);
-    if (params.source)   httpParams = httpParams.set('source', params.source);
-    if (params.fromDate) httpParams = httpParams.set('from', params.fromDate);
-    if (params.toDate)   httpParams = httpParams.set('to', params.toDate);
-    if (params.query)    httpParams = httpParams.set('q', params.query);
-
-    return this.http.get(`${this.apiUrl}/news`, {
-      headers: this.getHeaders(),
-      params: httpParams
-    }).pipe(
+        return articles;
+      }),
       catchError(error => {
         console.error('Error obteniendo noticias:', error);
-        return of({ articles: [] });
+        return of([]);
       })
     );
   }
@@ -65,8 +67,16 @@ export class NewsService {
     return this.currentNews;
   }
 
-  getNewsByUrl(url: string): News | undefined {
-    return this.currentNews.find(news => news.url === url);
+  getNewsByUrl(url: string): News | null {
+    // Buscar primero en las noticias actuales
+    let news = this.currentNews.find(n => n.url === url);
+    
+    // Si no se encuentra, buscar en las guardadas
+    if (!news && this.savedNewsCache.length > 0) {
+      news = this.savedNewsCache.find(n => n.url === url);
+    }
+    
+    return news || null;
   }
 
   /* getNewsById(id: string): Observable<any> {
@@ -94,7 +104,6 @@ export class NewsService {
     ).pipe(
       tap(savedNews => {
         console.log('Respuesta del servidor:', savedNews);
-        // ...existing code...
         const currentNews = [...this.currentNews];
         const index = currentNews.findIndex(n => n.url === news.url);
         if (index !== -1) {
@@ -115,14 +124,6 @@ export class NewsService {
     );
   }
 
-  private updateNewsState(newsUrl: string, isSaved: boolean) {
-    const currentNews = this.currentNews;
-    this.currentNews = currentNews.map(news => 
-      news.url === newsUrl ? { ...news, isSaved } : news
-    );
-    this.newsSubject.next(this.currentNews);
-  }
-
   isNewsSaved(url: string): Observable<boolean> {
     return this.http.get<boolean>(
       `${this.apiUrl}/preferences/saved-news/${encodeURIComponent(url)}`,
@@ -131,9 +132,12 @@ export class NewsService {
   }
 
   getSavedNews(): Observable<News[]> {
-    return this.http.get<News[]>(
-      `${this.apiUrl}/preferences/saved-news`,
-      { headers: this.getHeaders() }
+    return this.http.get<News[]>(`${this.apiUrl}/preferences/saved-news`, {
+      headers: this.getHeaders()
+    }).pipe(
+      tap(news => {
+        this.savedNewsCache = news; // Guardar en caché
+      })
     );
   }
 

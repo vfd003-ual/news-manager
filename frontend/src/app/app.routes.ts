@@ -6,6 +6,7 @@ import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterComponent } from './components/auth/register/register.component';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
+import { SavedNewsComponent } from './components/saved-news/saved-news.component';
 
 export const routes: Routes = [
   { 
@@ -36,6 +37,11 @@ export const routes: Routes = [
   { 
     path: 'profile', 
     component: UserProfileComponent, 
+    canActivate: [authGuard]
+  },
+  {
+    path: 'saved-news',
+    component: SavedNewsComponent,
     canActivate: [authGuard]
   },
   { 

@@ -1,4 +1,3 @@
-<!-- src/app/components/user-profile/user-profile.component.html -->
 <div class="profile-container">
   <div class="profile-header">
     <h1>Mi perfil</h1>
@@ -28,7 +27,7 @@
       </p>
       <p *ngIf="user.preferences.savedNews.length > 0">
         Tienes {{ user.preferences.savedNews.length }} noticias guardadas.
-        <a routerLink="/news" [queryParams]="{saved: true}">Ver mis noticias guardadas</a>
+        <a routerLink="/saved-news">Ver mis noticias guardadas</a>
       </p>
     </div>
   </div>
