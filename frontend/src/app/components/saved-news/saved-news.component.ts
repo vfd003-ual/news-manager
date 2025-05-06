@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { News } from '../../models/news.model';
 import { NewsService } from '../../services/news.service';
 import { NavigationStateService } from '../../services/navigation-state.service';
+import { ConfirmationService } from '../../services/confirmation.service';
 
 @Component({
   selector: 'app-saved-news',
@@ -19,7 +20,8 @@ export class SavedNewsComponent implements OnInit {
   constructor(
     private newsService: NewsService,
     private router: Router,
-    public navigationState: NavigationStateService  // Change from private to public
+    public navigationState: NavigationStateService,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
@@ -40,15 +42,21 @@ export class SavedNewsComponent implements OnInit {
     });
   }
 
-  unsaveNews(news: News): void {
-    this.newsService.toggleSaveNews(news, false).subscribe({
-      next: () => {
-        this.savedNews = this.savedNews.filter(n => n.url !== news.url);
-      },
-      error: (error) => {
-        console.error('Error al quitar noticia guardada:', error);
-      }
-    });
+  async unsaveNews(news: News): Promise<void> {
+    const confirmed = await this.confirmationService.confirm(
+      `¿Estás seguro de que deseas eliminar "${news.title}" de tus noticias guardadas?`
+    );
+
+    if (confirmed) {
+      this.newsService.toggleSaveNews(news, false).subscribe({
+        next: () => {
+          this.savedNews = this.savedNews.filter(n => n.url !== news.url);
+        },
+        error: (error) => {
+          console.error('Error al quitar noticia guardada:', error);
+        }
+      });
+    }
   }
 
   navigateToDetail(news: News): void {

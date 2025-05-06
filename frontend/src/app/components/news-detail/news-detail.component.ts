@@ -5,6 +5,7 @@ import { NewsService } from '../../services/news.service';
 import { AuthService } from '../../services/auth.service';
 import { News } from '../../models/news.model';
 import { NavigationStateService } from '../../services/navigation-state.service';
+import { ConfirmationService } from '../../services/confirmation.service';
 
 @Component({
   selector: 'app-news-detail',
@@ -26,7 +27,8 @@ export class NewsDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private newsService: NewsService,
     private authService: AuthService,
-    private navigationState: NavigationStateService
+    private navigationState: NavigationStateService,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit() {
@@ -99,7 +101,7 @@ export class NewsDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  toggleSave() {
+  async toggleSave() {
     if (!this.isAuthenticated) {
       this.router.navigate(['/login']);
       return;
@@ -107,10 +109,18 @@ export class NewsDetailComponent implements OnInit, OnDestroy {
 
     if (!this.news) return;
 
+    // Si vamos a quitar la noticia, pedimos confirmación
+    if (this.isSaved) {
+      const confirmed = await this.confirmationService.confirm(
+        `¿Estás seguro de que deseas eliminar "${this.news.title}" de tus noticias guardadas?`
+      );
+      
+      if (!confirmed) return;
+    }
+
     this.newsService.toggleSaveNews(this.news, !this.isSaved).subscribe({
       next: () => {
         this.isSaved = !this.isSaved;
-        console.log('Toggle save:', {isSaved: this.isSaved, isFromSavedNews: this.isFromSavedNews});
         
         if (!this.isSaved && this.isFromSavedNews) {
           this.navigationState.setFromSavedNews(false);
