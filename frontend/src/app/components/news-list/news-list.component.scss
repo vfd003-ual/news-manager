@@ -62,6 +62,24 @@
 .news-image {
   height: 180px;
   overflow: hidden;
+  position: relative;
+  background-color: #f5f6fa;
+
+  .image-error {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f6fa;
+    color: #7f8c8d;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+  }
 }
 
 .news-image img {
@@ -169,5 +187,4 @@
 .btn-unsave:hover {
   background-color: #c0392b;
 }
-  
-  
+

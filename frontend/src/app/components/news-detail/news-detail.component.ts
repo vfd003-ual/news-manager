@@ -18,6 +18,7 @@ export class NewsDetailComponent implements OnInit {
   error: string = '';
   isSaved: boolean = false;
   isAuthenticated: boolean = false;
+  private isFromSavedNews: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -27,9 +28,15 @@ export class NewsDetailComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.authService.isAuthenticated$.subscribe(
+      isAuthenticated => this.isAuthenticated = isAuthenticated
+    );
+    
     this.route.params.subscribe(params => {
       const url = params['url'];
       if (url) {
+        // Verificar si venimos de la página de noticias guardadas
+        this.isFromSavedNews = this.router.getCurrentNavigation()?.previousNavigation?.finalUrl?.toString().includes('saved-news') || false;
         this.loadNewsDetail(url);
         this.checkIfSaved(url);
       } else {
@@ -69,9 +76,14 @@ export class NewsDetailComponent implements OnInit {
     }
 }
 
-  checkIfSaved(id: string) {
-    this.newsService.isNewsSaved(id).subscribe(isSaved => {
-      this.isSaved = isSaved;
+  checkIfSaved(url: string) {
+    this.newsService.getSavedNews().subscribe({
+      next: (savedNews) => {
+        this.isSaved = savedNews.some(news => news.url === url);
+      },
+      error: (error) => {
+        console.error('Error al verificar si la noticia está guardada:', error);
+      }
     });
   }
 
@@ -90,6 +102,11 @@ export class NewsDetailComponent implements OnInit {
     action.subscribe({
       next: () => {
         this.isSaved = !this.isSaved;
+        
+        // Si estamos quitando la noticia y venimos de saved-news, volvemos a ella
+        if (!this.isSaved && this.isFromSavedNews) {
+          this.router.navigate(['/saved-news']);
+        }
       },
       error: (error) => {
         console.error('Error al guardar/quitar la noticia:', error);

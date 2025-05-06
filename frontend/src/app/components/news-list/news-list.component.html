@@ -19,7 +19,14 @@
     <div *ngIf="!loading && news.length > 0" class="news-grid">
       <div *ngFor="let item of news" class="news-card">
         <div class="news-image">
-          <img [src]="item.urlToImage || 'assets/images/placeholder.jpg'" [alt]="item.title">
+          <img 
+            [src]="item.urlToImage || 'assets/images/placeholder.jpg'" 
+            [alt]="item.title"
+            (error)="onImageError($event)"
+            >
+          <div class="image-error" *ngIf="!item.urlToImage">
+            Imagen no disponible
+          </div>
         </div>
         <div class="news-content">
           <div class="news-category">{{ item.source.name }}</div>

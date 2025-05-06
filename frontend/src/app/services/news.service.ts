@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject, of, throwError } from 'rxjs';
+import { Observable, BehaviorSubject, of, throwError, forkJoin } from 'rxjs';
 import { catchError, tap, map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { News } from '../models/news.model';
@@ -34,26 +34,27 @@ export class NewsService {
   }
 
   getNews(params: any = {}): Observable<any> {
-    
-    if (this.hasLoadedNews) {
-      return of({ articles: this.currentNews });
-    }
-    
-    let httpParams = new HttpParams();
+    return forkJoin([
+      this.http.get(`${this.apiUrl}/news`, {
+        params,
+        headers: this.getHeaders()
+      }),
+      this.getSavedNews()
+    ]).pipe(
+      map(([newsResponse, savedNews]) => {
+        const articles = (newsResponse as any).articles || [];
+        const savedUrls = new Set(savedNews.map(n => n.url));
+        
+        // Marcar las noticias que están guardadas
+        articles.forEach((article: News) => {
+          article.isSaved = savedUrls.has(article.url);
+        });
 
-    if (params.category) httpParams = httpParams.set('category', params.category);
-    if (params.source)   httpParams = httpParams.set('source', params.source);
-    if (params.fromDate) httpParams = httpParams.set('from', params.fromDate);
-    if (params.toDate)   httpParams = httpParams.set('to', params.toDate);
-    if (params.query)    httpParams = httpParams.set('q', params.query);
-
-    return this.http.get(`${this.apiUrl}/news`, {
-      headers: this.getHeaders(),
-      params: httpParams
-    }).pipe(
+        return articles;
+      }),
       catchError(error => {
         console.error('Error obteniendo noticias:', error);
-        return of({ articles: [] });
+        return of([]);
       })
     );
   }
@@ -103,7 +104,6 @@ export class NewsService {
     ).pipe(
       tap(savedNews => {
         console.log('Respuesta del servidor:', savedNews);
-        // ...existing code...
         const currentNews = [...this.currentNews];
         const index = currentNews.findIndex(n => n.url === news.url);
         if (index !== -1) {

@@ -33,9 +33,8 @@ export class NewsListComponent implements OnInit {
   loadNews(): void {
     this.loading = true;
     this.newsService.getNews().subscribe({
-      next: (data) => {
-        console.log('Datos recibidos:', data); // Para debug
-        this.allNews = Array.isArray(data) ? data : (data?.articles || []);
+      next: (articles) => {
+        this.allNews = articles;
         this.news = [...this.allNews];
         this.newsService.setCurrentNews(this.news);
         this.sources = Array.from(new Set(
@@ -44,7 +43,7 @@ export class NewsListComponent implements OnInit {
             .filter(source => source != null) as string[]
         )).sort();
         this.loading = false;
-        console.log('Noticias procesadas:', this.news); // Para debug
+        console.log('Noticias procesadas con estado de guardado:', this.news);
       },
       error: (error) => {
         console.error('Error al cargar noticias:', error);
@@ -114,5 +113,17 @@ export class NewsListComponent implements OnInit {
         console.error('Error al quitar noticia guardada:', error);
       }
     });
+  }
+
+  onImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+    const parent = img.parentElement;
+    if (parent) {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'image-error';
+      errorDiv.textContent = 'Imagen no disponible';
+      parent.appendChild(errorDiv);
+    }
   }
 }
