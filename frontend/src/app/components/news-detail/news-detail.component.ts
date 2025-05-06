@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NewsService } from '../../services/news.service';
 import { AuthService } from '../../services/auth.service';
 import { News } from '../../models/news.model';
+import { NavigationStateService } from '../../services/navigation-state.service';
 
 @Component({
   selector: 'app-news-detail',
@@ -12,31 +13,38 @@ import { News } from '../../models/news.model';
   templateUrl: './news-detail.component.html',
   styleUrls: ['./news-detail.component.scss']
 })
-export class NewsDetailComponent implements OnInit {
+export class NewsDetailComponent implements OnInit, OnDestroy {
   news: News | null = null;
   isLoading: boolean = true;
   error: string = '';
   isSaved: boolean = false;
   isAuthenticated: boolean = false;
-  private isFromSavedNews: boolean = false;
+  isFromSavedNews: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private newsService: NewsService,
-    private authService: AuthService
+    private authService: AuthService,
+    private navigationState: NavigationStateService
   ) {}
 
   ngOnInit() {
     this.authService.isAuthenticated$.subscribe(
       isAuthenticated => this.isAuthenticated = isAuthenticated
     );
+
+    // Suscribirse al estado de navegación
+    this.navigationState.fromSavedNews$.subscribe(
+      fromSaved => {
+        this.isFromSavedNews = fromSaved;
+        console.log('Is from saved news:', fromSaved);
+      }
+    );
     
     this.route.params.subscribe(params => {
       const url = params['url'];
       if (url) {
-        // Verificar si venimos de la página de noticias guardadas
-        this.isFromSavedNews = this.router.getCurrentNavigation()?.previousNavigation?.finalUrl?.toString().includes('saved-news') || false;
         this.loadNewsDetail(url);
         this.checkIfSaved(url);
       } else {
@@ -45,14 +53,18 @@ export class NewsDetailComponent implements OnInit {
     });
   }
 
+  ngOnDestroy() {
+    // Reset the navigation state when leaving the component
+    this.navigationState.setFromSavedNews(false);
+    console.log('Navigation state reset on destroy');
+  }
+
   loadNewsDetail(url: string) {
     this.isLoading = true;
     
-    // Primero buscar en las noticias actuales
     let foundNews = this.newsService.getNewsByUrl(url);
     
     if (!foundNews) {
-      // Si no se encuentra en las noticias actuales, buscar en las guardadas
       this.newsService.getSavedNews().subscribe({
         next: (savedNews) => {
           foundNews = savedNews.find(news => news.url === url) ?? null;
@@ -94,17 +106,14 @@ export class NewsDetailComponent implements OnInit {
     }
 
     if (!this.news) return;
-    
-    const action = this.isSaved ? 
-      this.newsService.toggleSaveNews(this.news, false) :
-      this.newsService.toggleSaveNews(this.news, true);
 
-    action.subscribe({
+    this.newsService.toggleSaveNews(this.news, !this.isSaved).subscribe({
       next: () => {
         this.isSaved = !this.isSaved;
+        console.log('Toggle save:', {isSaved: this.isSaved, isFromSavedNews: this.isFromSavedNews});
         
-        // Si estamos quitando la noticia y venimos de saved-news, volvemos a ella
         if (!this.isSaved && this.isFromSavedNews) {
+          this.navigationState.setFromSavedNews(false);
           this.router.navigate(['/saved-news']);
         }
       },
@@ -115,6 +124,11 @@ export class NewsDetailComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/news']);
+    // No need to reset here since ngOnDestroy will handle it
+    if (this.isFromSavedNews) {
+      this.router.navigate(['/saved-news']);
+    } else {
+      this.router.navigate(['/news']);
+    }
   }
 }

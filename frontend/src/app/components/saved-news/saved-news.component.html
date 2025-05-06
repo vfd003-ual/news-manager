@@ -24,7 +24,9 @@
               <span class="news-date">{{ item.publishedAt | date:'dd/MM/yyyy HH:mm' }}</span>
             </div>
             <div class="news-actions">
-              <button class="btn-view" [routerLink]="['/news', item.url]">Leer Más</button>
+              <button class="btn-view" [routerLink]="['/news', item.url]" (click)="navigationState.setFromSavedNews(true)">
+                Leer Más
+              </button>
               <button class="btn-unsave" (click)="unsaveNews(item)">Quitar</button>
             </div>
           </div>

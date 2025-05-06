@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 import { News } from '../../models/news.model';
 import { NewsService } from '../../services/news.service';
+import { NavigationStateService } from '../../services/navigation-state.service';
 
 @Component({
   selector: 'app-saved-news',
@@ -11,13 +12,14 @@ import { NewsService } from '../../services/news.service';
   templateUrl: './saved-news.component.html',
   styleUrl: './saved-news.component.scss'
 })
-export class SavedNewsComponent {
+export class SavedNewsComponent implements OnInit {
   savedNews: News[] = [];
   loading = true;
 
   constructor(
     private newsService: NewsService,
-    private router: Router
+    private router: Router,
+    public navigationState: NavigationStateService  // Change from private to public
   ) {}
 
   ngOnInit(): void {
@@ -47,5 +49,10 @@ export class SavedNewsComponent {
         console.error('Error al quitar noticia guardada:', error);
       }
     });
+  }
+
+  navigateToDetail(news: News): void {
+    this.navigationState.setFromSavedNews(true);
+    this.router.navigate(['/news', news.url]);
   }
 }
