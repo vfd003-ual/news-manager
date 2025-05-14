@@ -1,34 +1,57 @@
 <div class="profile-container">
   <div class="profile-header">
     <h1>Mi perfil</h1>
-    <p *ngIf="user">Bienvenido, {{ user.name }}!</p>
   </div>
 
-  <div class="profile-card">
+  <div class="profile-card" *ngIf="!loading">
     <h2>Información personal</h2>
-    <div class="user-info" *ngIf="user">
-      <div class="info-item">
-        <strong>Nombre:</strong> {{ user.name }}
+    <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+      <div class="form-group">
+        <label for="name">Nombre</label>
+        <input id="name" type="text" formControlName="name">
       </div>
-      <div class="info-item">
-        <strong>Email:</strong> {{ user.email }}
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email">
       </div>
-      <div class="info-item">
-        <strong>Miembro desde:</strong> {{ user.createdAt | date:'dd/MM/yyyy' }}
+
+      <div class="form-footer">
+        <button type="submit" 
+                class="btn-primary" 
+                [disabled]="!profileForm.valid || saving || !checkFormChanges()">
+          {{ saving ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
       </div>
-    </div>
+    </form>
   </div>
 
   <div class="profile-card">
-    <h2>Noticias guardadas</h2>
-    <div class="saved-news-info" *ngIf="user">
-      <p *ngIf="user.preferences.savedNews.length === 0">
-        Aún no has guardado ninguna noticia.
-      </p>
-      <p *ngIf="user.preferences.savedNews.length > 0">
-        Tienes {{ user.preferences.savedNews.length }} noticias guardadas.
-        <a routerLink="/saved-news">Ver mis noticias guardadas</a>
-      </p>
-    </div>
+    <h2>Cambiar contraseña</h2>
+    <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()">
+      <div class="form-group">
+        <label for="currentPassword">Contraseña actual</label>
+        <input id="currentPassword" type="password" formControlName="currentPassword">
+      </div>
+
+      <div class="form-group">
+        <label for="newPassword">Nueva contraseña</label>
+        <input id="newPassword" type="password" formControlName="newPassword">
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirmar nueva contraseña</label>
+        <input id="confirmPassword" type="password" formControlName="confirmPassword">
+      </div>
+
+      <div class="form-footer">
+        <button type="submit" class="btn-primary" [disabled]="!passwordForm.valid || saving">
+          {{ saving ? 'Guardando...' : 'Cambiar contraseña' }}
+        </button>
+      </div>
+    </form>
   </div>
+
+  <div class="message success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="message error" *ngIf="errorMessage">{{ errorMessage }}</div>
 </div>
