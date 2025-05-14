@@ -121,6 +121,28 @@ export class AuthService {
       })
     );
   }
+
+  // Actualizar perfil del usuario
+  updateUserProfile(userData: {
+    name?: string;
+    email?: string;
+    currentPassword?: string;
+    newPassword?: string;
+  }): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/user`, userData, {
+      headers: new HttpHeaders({
+        'x-auth-token': this.getToken() || ''
+      })
+    }).pipe(
+      tap(updatedUser => {
+        this.userSubject.next(updatedUser);
+      }),
+      catchError(error => {
+        return throwError(() => error);
+      })
+    );
+  }
+
   // Cerrar sesión
   logout() {
     localStorage.removeItem(this.tokenKey);
