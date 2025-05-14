@@ -1,1 +1,29 @@
 /* You can add global styles to this file, and also import other style files */
+
+.notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  border-radius: 4px;
+  color: white;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  
+  &.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  &.success {
+    background-color: #2ecc71;
+  }
+  
+  &.error {
+    background-color: #e74c3c;
+  }
+}
