@@ -34,6 +34,11 @@
     padding-bottom: 10px;
     border-bottom: 1px solid #ecf0f1;
   }
+
+  form {
+    max-width: 100%;
+    padding: 0 15px;
+  }
 }
 
 .user-info {
@@ -91,7 +96,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 20px;
+  margin: 20px 0;
   position: relative;
   overflow: hidden;
   
@@ -120,7 +125,6 @@
     }
   }
 
-  // Efecto de ripple al hacer click
   &::after {
     content: '';
     position: absolute;
@@ -144,17 +148,13 @@
   }
 }
 
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.7; }
-  100% { opacity: 1; }
-}
 
 .form-footer {
   margin-top: 25px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 .saved-news-info {
@@ -178,6 +178,7 @@
 
 .form-group {
   margin-bottom: 20px;
+  width: 100%;
   
   label {
     display: block;
@@ -188,10 +189,11 @@
   
   input {
     width: 100%;
-    padding: 8px;
+    padding: 12px;
     border: 1px solid #bdc3c7;
     border-radius: 4px;
     font-size: 16px;
+    box-sizing: border-box;
     
     &:focus {
       outline: none;

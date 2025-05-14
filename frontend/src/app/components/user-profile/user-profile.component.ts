@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from "@angular/forms"
 import { User } from "../../models/user.model"
 import { AuthService } from "../../services/auth.service"
+import { NotificationService } from "../../services/notification.service"
 
 @Component({
   selector: "app-user-profile",
@@ -27,7 +28,8 @@ export class UserProfileComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private notificationService: NotificationService
   ) {
     this.profileForm = this.fb.group({
       name: ['', Validators.required],
@@ -54,15 +56,16 @@ export class UserProfileComponent implements OnInit {
     this.loading = true;
     this.authService.getUserInfo().subscribe({
       next: (user) => {
-        this.user = user;
+        // Guardar los valores originales
         this.originalUserData = {
           name: user.name,
           email: user.email
         };
+        // Establecer los valores en el formulario
         this.profileForm.patchValue({
           name: user.name,
           email: user.email
-        });
+        }, { emitEvent: false }); // Evitar trigger innecesario de valueChanges
         this.loading = false;
       },
       error: (error) => {
@@ -74,17 +77,24 @@ export class UserProfileComponent implements OnInit {
   }
 
   updateProfile(): void {
-    if (this.profileForm.valid) {
+    if (this.profileForm.valid && this.checkFormChanges()) {
       this.saving = true;
       this.authService.updateUserProfile(this.profileForm.value).subscribe({
         next: (user) => {
           this.user = user;
-          this.successMessage = 'Perfil actualizado correctamente';
+          this.originalUserData = {
+            name: user.name,
+            email: user.email
+          };
+          this.notificationService.showNotification('Perfil actualizado correctamente');
           this.saving = false;
         },
         error: (error) => {
           console.error('Error al actualizar perfil:', error);
-          this.errorMessage = error.error.msg || 'Error al actualizar el perfil';
+          this.notificationService.showNotification(
+            error.error.msg || 'Error al actualizar el perfil',
+            true
+          );
           this.saving = false;
         }
       });
@@ -99,13 +109,16 @@ export class UserProfileComponent implements OnInit {
         newPassword: this.passwordForm.get('newPassword')?.value
       }).subscribe({
         next: () => {
-          this.successMessage = 'Contraseña actualizada correctamente';
+          this.notificationService.showNotification('Contraseña actualizada correctamente');
           this.passwordForm.reset();
           this.saving = false;
         },
         error: (error) => {
           console.error('Error al actualizar contraseña:', error);
-          this.errorMessage = error.error.msg || 'Error al actualizar la contraseña';
+          this.notificationService.showNotification(
+            error.error.msg || 'Error al actualizar la contraseña',
+            true
+          );
           this.saving = false;
         }
       });
