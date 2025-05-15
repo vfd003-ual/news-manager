@@ -37,7 +37,7 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
-// Método para encriptar la contraseña antes de guardar
+// Encriptar la password antes de guardar
 UserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   
@@ -49,7 +49,7 @@ UserSchema.pre('save', async function(next) {
   }
 });
 
-// Método para comparar contraseñas
+// Comparar password
 UserSchema.methods.comparePassword = async function(candidatePassword) {
   try {
     return await argon2.verify(this.password, candidatePassword);

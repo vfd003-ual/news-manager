@@ -4,7 +4,6 @@ const auth = require('../middleware/auth');
 const User = require('../models/User');
 
 // Ruta PUT /api/preferences/saved-news - Guardar/eliminar noticias
-// Ruta PUT /api/preferences/saved-news
 router.put('/saved-news', auth, async (req, res) => {
   try {
     console.log('PUT /saved-news - Request received:', {

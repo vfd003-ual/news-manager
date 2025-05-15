@@ -30,7 +30,7 @@ export class NewsService {
     });
   }
 
-  // Método para obtener noticias de la API externa
+  // Obtener noticias de la API externa
   private getExternalNews(params: any = {}): Observable<News[]> {
     return this.http.get<{articles: News[]}>(`${this.apiUrl}/news`, {
       params,
@@ -44,7 +44,7 @@ export class NewsService {
     );
   }
 
-  // Método para obtener noticias del scraping
+  // Obtener noticias del scraping
   private getScrapedNews(): Observable<News[]> {
     return this.http.get<{articles: News[]}>(`${this.apiUrl}/news/local`, {
       headers: this.getHeaders()
@@ -57,7 +57,7 @@ export class NewsService {
     );
   }
 
-  // Método principal que combina todas las fuentes de noticias
+  // Combina todas las fuentes de noticias
   getNews(filter?: NewsFilter): Observable<News[]> {
     return forkJoin({
       external: this.getExternalNews(filter),
@@ -71,7 +71,7 @@ export class NewsService {
         // Crear un Set con las URLs de las noticias guardadas
         const savedUrls = new Set(saved.map(n => n.url));
         
-        // Marcar las noticias guardadas y añadir fuente para las scrapeadas
+        // Marcar las noticias guardadas e incluir fuente para las scrapeadas
         allNews.forEach(news => {
           news.isSaved = savedUrls.has(news.url);
           if (news.source?.id === 'diario-almeria') {
@@ -92,7 +92,7 @@ export class NewsService {
     );
   }
 
-  // Método para filtrar noticias localmente
+  // Filtrar noticias localmente
   filterNews(filter: NewsFilter): News[] {
     return this.currentNews.filter(news => {
       if (filter.source && news.source?.name !== filter.source) {
@@ -175,7 +175,7 @@ export class NewsService {
       headers: this.getHeaders()
     }).pipe(
       tap(news => {
-        this.savedNewsCache = news; // Guardar en caché
+        this.savedNewsCache = news;
       })
     );
   }

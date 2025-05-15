@@ -1,10 +1,9 @@
-// routes/newsProxy.js
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const authMiddleware = require('../middleware/auth');
 const NodeCache = require('node-cache');
-const cache = new NodeCache({ stdTTL: 300 }); // 5 minutos
+const cache = new NodeCache({ stdTTL: 300 }); 
 
 router.get('/', authMiddleware, async (req, res) => {
   const { category, query } = req.query;
@@ -27,8 +26,6 @@ router.get('/', authMiddleware, async (req, res) => {
         apiKey: process.env.NEWS_API_KEY,
       },
     });
-
-    //console.log('[NEWS] Respuesta desde NewsAPI:', response.data);
 
     cache.set(cacheKey, response.data);
     res.json(response.data);

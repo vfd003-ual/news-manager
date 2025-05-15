@@ -12,7 +12,7 @@ export class ConfirmationService {
       if (isPlatformBrowser(this.platformId)) {
         resolve(window.confirm(message));
       } else {
-        resolve(false); // En el servidor, por defecto rechazamos la confirmación
+        resolve(false);
       }
     });
   }

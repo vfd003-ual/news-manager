@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Para ngIf, ngFor, etc.
-import { RouterModule } from '@angular/router'; // Para routerLink
-import { NewsFilterComponent } from '../news-filter/news-filter.component'; // Importa el componente
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { NewsFilterComponent } from '../news-filter/news-filter.component';
 import { News, NewsFilter } from '../../models/news.model';
 import { NewsService } from '../../services/news.service';
 import { ScrollTopComponent } from '../scroll-top/scroll-top.component';

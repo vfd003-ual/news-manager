@@ -26,7 +26,7 @@ export class AuthService {
     this.loadToken();
   }
 
-  // Carga el token y verifica al usuario al iniciar la aplicación
+  // Carga el token y verifica al usuario al iniciar la aplicacion
   loadToken() {
   if (isPlatformBrowser(this.platformId) && localStorage) {
     const token = localStorage.getItem(this.tokenKey);
@@ -72,7 +72,7 @@ export class AuthService {
     );
   }
 
-  // Inicio de sesión
+  // Inicio de sesion
   login(credentials: { email: string; password: string }): Observable<{ token: string }> {
     return this.http.post<{ token: string }>(`${this.apiUrl}/login`, credentials).pipe(
       tap(res => {
@@ -89,7 +89,7 @@ export class AuthService {
     );
   }
 
-  // Obtener información del usuario
+  // Obtener informacion del usuario
   getUserInfo(): Observable<User> {
     const headers = new HttpHeaders({
       'x-auth-token': localStorage.getItem(this.tokenKey) || ''
@@ -114,7 +114,6 @@ export class AuthService {
     
     return this.http.put<User>(`${this.apiUrl}/preferences`, preferences, { headers }).pipe(
       tap(updatedUser => {
-        // Actualizar el usuario en el BehaviorSubject
         this.userSubject.next(updatedUser);
       }),
       catchError(error => {
@@ -144,7 +143,7 @@ export class AuthService {
     );
   }
 
-  // Cerrar sesión
+  // Cerrar sesion
   logout() {
     localStorage.removeItem(this.tokenKey);
     this.userSubject.next(null);

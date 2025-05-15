@@ -1,5 +1,5 @@
 .news-container {
-  margin-top: 30px; // Ajusta este valor según la altura de tu header
+  margin-top: 30px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -14,7 +14,7 @@
   .filter-section {
     flex: 0 0 300px;
     position: sticky;
-    top: 80px; // Ajusta según la altura del header
+    top: 80px;
   }
   
   .news-list {
