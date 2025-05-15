@@ -1,28 +1,33 @@
-import { inject } from '@angular/core';
+import { inject, PLATFORM_ID } from '@angular/core';
 import { Router, UrlTree } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, first } from 'rxjs/operators';
+import { isPlatformBrowser } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 
 export const authGuard = (): Observable<boolean | UrlTree> => {
   const router = inject(Router);
   const authService = inject(AuthService);
+  const platformId = inject(PLATFORM_ID);
 
   return authService.isAuthenticated$.pipe(
-    first(), // first() completa el observable inmediatamente después de emitir
+    first(),
     map(isAuthenticated => {
       if (isAuthenticated) {
         return true;
       }
+
+      // Creamos un UrlTree para la navegación
+      const loginUrl = router.createUrlTree(['/login']);
       
-      // En lugar de usar createUrlTree, que causa el parpadeo,
-      // podemos programar la navegación de manera diferente
-      router.navigateByUrl('/login', { skipLocationChange: true }).then(() => {
-        window.history.replaceState({}, '', '/login');
-      });
+      // Solo manipulamos el history en el navegador
+      if (isPlatformBrowser(platformId)) {
+        router.navigateByUrl('/login', { skipLocationChange: true }).then(() => {
+          window.history.replaceState({}, '', '/login');
+        });
+      }
       
-      // Retornamos false para evitar la navegación original
-      return false;
+      return loginUrl;
     })
   );
 };

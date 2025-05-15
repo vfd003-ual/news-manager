@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 import { User } from '../models/user.model';
 
 @Injectable({
@@ -17,17 +18,17 @@ export class AuthService {
   // Estado de autenticación
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
-
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.loadToken();
   }
 
   // Carga el token y verifica al usuario al iniciar la aplicación
   loadToken() {
-  if (typeof window !== 'undefined' && window.localStorage) {
+  if (isPlatformBrowser(this.platformId) && localStorage) {
     const token = localStorage.getItem(this.tokenKey);
     
     if (!token) {

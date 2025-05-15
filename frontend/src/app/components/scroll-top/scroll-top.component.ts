@@ -1,5 +1,5 @@
-import { Component, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, HostListener, PLATFORM_ID, Inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-scroll-top',
@@ -9,16 +9,22 @@ import { CommonModule } from '@angular/common';
 })
 export class ScrollTopComponent {
   showButton = false;
+  
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
   @HostListener('window:scroll')
   onWindowScroll() {
-    this.showButton = window.scrollY > 300;
+    if (isPlatformBrowser(this.platformId)) {
+      this.showButton = window.scrollY > 300;
+    }
   }
 
   scrollToTop() {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
   }
 }

@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:  
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - BACKEND_URL=http://backend:3000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+      platforms:
+        - "linux/amd64"
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - MONGODB_URI=mongodb://admin:secret@mongodb:27017/news-manager?authSource=admin
+      - JWT_SECRET=${JWT_SECRET}
+      - NEWS_API_KEY=${NEWS_API_KEY}
+      - NEWS_API_URL=${NEWS_API_URL}
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - mongodb
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/mongodb:/data/db
+      - ./data/mongodb_config:/data/configdb
+      - ./logs/mongodb:/var/log/mongodb
+    environment:
+      - MONGO_INITDB_DATABASE=news-manager
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=secret
+
+volumes:
+  mongodb_data:
+    driver: local

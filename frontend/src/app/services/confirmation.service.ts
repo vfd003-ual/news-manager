@@ -1,12 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ConfirmationService {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
   confirm(message: string): Promise<boolean> {
     return new Promise<boolean>(resolve => {
-      resolve(window.confirm(message));
+      if (isPlatformBrowser(this.platformId)) {
+        resolve(window.confirm(message));
+      } else {
+        resolve(false); // En el servidor, por defecto rechazamos la confirmación
+      }
     });
   }
 }
