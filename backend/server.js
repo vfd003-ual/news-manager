@@ -16,6 +16,7 @@ app.use(express.json({ extended: false }));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/preferences', require('./routes/preferences'));
 app.use('/api/news', require('./routes/newsProxy'));
+app.use('/api/news', require('./routes/scraping'));
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => console.log(`Servidor iniciado en puerto ${PORT}`));

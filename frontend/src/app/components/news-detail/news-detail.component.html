@@ -23,7 +23,6 @@
       <div class="article-meta">
         <span class="source">{{ news.source.name }}</span>
         <span class="date">{{ news.publishedAt | date:'dd/MM/yyyy HH:mm' }}</span>
-        <span class="author" *ngIf="news.author">Por: {{ news.author }}</span>
       </div>
     </header>
 
@@ -33,7 +32,6 @@
 
     <div class="article-content">
       <p class="description">{{ news.description }}</p>
-      <p class="content">{{ news.content }}</p>
     </div>
 
     <footer class="article-footer" *ngIf="news.url">
