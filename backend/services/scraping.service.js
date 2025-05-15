@@ -6,7 +6,7 @@ class ScrapingService {
   constructor() {
     this.baseUrl = 'https://www.diariodealmeria.es';
     this.axiosConfig = {
-      timeout: 3000, // Reducido aún más el timeout
+      timeout: 3000,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'
       },
@@ -14,14 +14,13 @@ class ScrapingService {
     };
     this.maxConcurrentRequests = 5;
     
-    // Configurar caché
+    // Configurar cache
     this.cache = new NodeCache({ 
-      stdTTL: 600, // 10 minutos de tiempo de vida
-      checkperiod: 120, // Revisar caducidad cada 2 minutos
+      stdTTL: 600,
+      checkperiod: 120,
       useClones: false
     });
     
-    // Clave de caché para la página principal
     this.CACHE_KEY_HOME = 'home_articles';
   }
 
@@ -30,7 +29,7 @@ class ScrapingService {
       console.time('scraping');
       console.log('Comprobando caché...');
 
-      // Intentar obtener datos de caché
+      // Intentar obtener datos de cache
       const cachedArticles = this.cache.get(this.CACHE_KEY_HOME);
       if (cachedArticles) {
         console.log('Datos obtenidos desde caché');
@@ -49,7 +48,7 @@ class ScrapingService {
       const processedArticles = await this.processBatchesInParallel(articles);
       const formattedArticles = this.formatArticles(processedArticles);
 
-      // Guardar en caché
+      // Guardar en cache
       this.cache.set(this.CACHE_KEY_HOME, formattedArticles);
       
       console.timeEnd('scraping');
@@ -58,7 +57,7 @@ class ScrapingService {
     } catch (error) {
       console.error('Error en scraping:', error.message);
       
-      // En caso de error, intentar devolver caché expirada si existe
+      // En caso de error, intentar devolver cache expirada si existe
       const cachedArticles = this.cache.get(this.CACHE_KEY_HOME, true);
       if (cachedArticles) {
         console.log('Devolviendo caché expirada como fallback');
@@ -82,7 +81,6 @@ class ScrapingService {
 
     for (const batch of batches) {
       const batchPromises = batch.map(article => {
-        // Intentar obtener del caché primero
         const cacheKey = `article_${article.url}`;
         const cachedArticle = this.cache.get(cacheKey);
         
@@ -92,7 +90,6 @@ class ScrapingService {
 
         return this.processArticleDetails(article)
           .then(processedArticle => {
-            // Guardar en caché
             this.cache.set(cacheKey, processedArticle);
             return processedArticle;
           })
@@ -131,10 +128,9 @@ class ScrapingService {
 
         const fullUrl = url.startsWith('http') ? url : `${this.baseUrl}${url}`;
         
-        // Usar Set para eliminar duplicados automáticamente
         articles.add(JSON.stringify({ title, url: fullUrl, imageUrl }));
       } catch (err) {
-        // Continuar con el siguiente artículo si hay error
+        // Continuar con el siguiente si hay error
       }
     });
 
@@ -146,7 +142,6 @@ class ScrapingService {
       const response = await axios.get(article.url, this.axiosConfig);
       const $ = cheerio.load(response.data);
       
-      // Optimizar selección de contenido
       const bodyText = $('.article-body p')
         .filter((_, el) => $(el).text().trim().length > 30)
         .map((_, el) => $(el).text().trim())
@@ -164,7 +159,7 @@ class ScrapingService {
         description: subtitle || bodyText.split('\n')[0] || 'Sin descripción'
       };
     } catch (err) {
-      throw err; // Manejar en el nivel superior
+      throw err;
     }
   }
 

@@ -36,11 +36,9 @@ export class NewsDetailComponent implements OnInit, OnDestroy {
       isAuthenticated => this.isAuthenticated = isAuthenticated
     );
 
-    // Suscribirse al estado de navegación
     this.navigationState.fromSavedNews$.subscribe(
       fromSaved => {
         this.isFromSavedNews = fromSaved;
-        console.log('Is from saved news:', fromSaved);
       }
     );
     
@@ -56,9 +54,7 @@ export class NewsDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // Reset the navigation state when leaving the component
     this.navigationState.setFromSavedNews(false);
-    console.log('Navigation state reset on destroy');
   }
 
   loadNewsDetail(url: string) {
@@ -109,7 +105,7 @@ export class NewsDetailComponent implements OnInit, OnDestroy {
 
     if (!this.news) return;
 
-    // Si vamos a quitar la noticia, pedimos confirmación
+    // Si vamos a quitar la noticia, pedimos confirmacion
     if (this.isSaved) {
       const confirmed = await this.confirmationService.confirm(
         `¿Estás seguro de que deseas eliminar "${this.news.title}" de tus noticias guardadas?`
@@ -134,7 +130,6 @@ export class NewsDetailComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    // No need to reset here since ngOnDestroy will handle it
     if (this.isFromSavedNews) {
       this.router.navigate(['/saved-news']);
     } else {

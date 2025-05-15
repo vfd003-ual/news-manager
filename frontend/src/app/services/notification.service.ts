@@ -9,13 +9,10 @@ export class NotificationService {
     notification.className = `notification ${isError ? 'error' : 'success'}`;
     notification.textContent = message;
     
-    // Añadir al DOM
     document.body.appendChild(notification);
     
-    // Añadir clase para la animación de entrada
     setTimeout(() => notification.classList.add('show'), 100);
     
-    // Eliminar después de 3 segundos
     setTimeout(() => {
       notification.classList.remove('show');
       setTimeout(() => document.body.removeChild(notification), 300);
