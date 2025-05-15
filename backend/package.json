@@ -11,9 +11,8 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "axios": "^1.9.0",
-    "bcrypt": "^5.1.1",
+  "dependencies": {    "axios": "^1.9.0",
+    "argon2": "^0.31.2",
     "cheerio": "^1.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",

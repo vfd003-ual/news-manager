@@ -83,3 +83,9 @@ dist-ssr/
 **/*.log
 **/*.swp
 **/*.bak
+
+# MongoDB data and logs
+/data/
+/logs/
+data/
+logs/

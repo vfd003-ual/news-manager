@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const argon2 = require('argon2');
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -41,14 +41,21 @@ const UserSchema = new mongoose.Schema({
 UserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
+  try {
+    this.password = await argon2.hash(this.password);
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Método para comparar contraseñas
 UserSchema.methods.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
+  try {
+    return await argon2.verify(this.password, candidatePassword);
+  } catch (err) {
+    throw err;
+  }
 };
 
 module.exports = mongoose.model('User', UserSchema);

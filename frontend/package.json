@@ -1,13 +1,16 @@
 {
   "name": "news-manager",
-  "version": "0.0.0",
-  "scripts": {
+  "version": "0.0.0",  "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:news-manager": "node dist/news-manager/server/server.mjs"
+    "dev:ssr": "ng serve-ssr",
+    "serve:ssr": "node dist/news-manager/server/main.js",
+    "build:server": "ng run news-manager:server",
+    "build:ssr": "npm run build && npm run build:server",
+    "prerender": "ng run news-manager:prerender"
   },
   "private": true,
   "dependencies": {

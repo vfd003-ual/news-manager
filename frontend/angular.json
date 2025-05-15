@@ -79,7 +79,7 @@
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n"
-        },
+        },        
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
@@ -100,6 +100,40 @@
             ],
             "scripts": []
           }
+        },
+        "server": {
+          "builder": "@angular-devkit/build-angular:server",
+          "options": {
+            "outputPath": "dist/news-manager/server",
+            "main": "src/main.server.ts",
+            "tsConfig": "tsconfig.server.json"
+          },
+          "configurations": {
+            "production": {
+              "outputHashing": "media"
+            },
+            "development": {
+              "optimization": false,
+              "sourceMap": true,
+              "extractLicenses": false,
+              "vendorChunk": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve-ssr": {
+          "builder": "@nguniversal/builders:ssr-dev-server",
+          "configurations": {
+            "development": {
+              "browserTarget": "news-manager:build:development",
+              "serverTarget": "news-manager:server:development"
+            },
+            "production": {
+              "browserTarget": "news-manager:build:production",
+              "serverTarget": "news-manager:server:production"
+            }
+          },
+          "defaultConfiguration": "development"
         }
       }
     }
