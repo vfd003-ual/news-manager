@@ -10,22 +10,19 @@ import { NewsFilter } from '../models/news.model';
   providedIn: 'root'
 })
 export class NewsService {
-  private apiUrl = 'http://localhost:3000/api'; // ← Proxy en tu backend
+  private apiUrl = 'http://localhost:3000/api';
   private savedNewsSubject = new BehaviorSubject<string[]>([]);
   public savedNews$ = this.savedNewsSubject.asObservable();
   private currentNews: News[] = [];
   private savedNewsCache: News[] = [];
-
   private newsSubject = new BehaviorSubject<News[]>([]);
   public news$ = this.newsSubject.asObservable();
-  private hasLoadedNews = false;
 
   constructor(
     private http: HttpClient,
     private authService: AuthService
   ) {}
 
-  // Nuevo formato de headers usando 'Authorization'
   private getHeaders(): HttpHeaders {
     return new HttpHeaders({
       'Content-Type': 'application/json',
@@ -33,30 +30,83 @@ export class NewsService {
     });
   }
 
-  getNews(params: any = {}): Observable<any> {
-    return forkJoin([
-      this.http.get(`${this.apiUrl}/news`, {
-        params,
-        headers: this.getHeaders()
-      }),
-      this.getSavedNews()
-    ]).pipe(
-      map(([newsResponse, savedNews]) => {
-        const articles = (newsResponse as any).articles || [];
-        const savedUrls = new Set(savedNews.map(n => n.url));
+  // Método para obtener noticias de la API externa
+  private getExternalNews(params: any = {}): Observable<News[]> {
+    return this.http.get<{articles: News[]}>(`${this.apiUrl}/news`, {
+      params,
+      headers: this.getHeaders()
+    }).pipe(
+      map(response => response.articles || []),
+      catchError(error => {
+        console.error('Error obteniendo noticias externas:', error);
+        return of([]);
+      })
+    );
+  }
+
+  // Método para obtener noticias del scraping
+  private getScrapedNews(): Observable<News[]> {
+    return this.http.get<{articles: News[]}>(`${this.apiUrl}/news/local`, {
+      headers: this.getHeaders()
+    }).pipe(
+      map(response => response.articles || []),
+      catchError(error => {
+        console.error('Error obteniendo noticias locales:', error);
+        return of([]);
+      })
+    );
+  }
+
+  // Método principal que combina todas las fuentes de noticias
+  getNews(filter?: NewsFilter): Observable<News[]> {
+    return forkJoin({
+      external: this.getExternalNews(filter),
+      scraped: this.getScrapedNews(),
+      saved: this.getSavedNews()
+    }).pipe(
+      map(({external, scraped, saved}) => {
+        // Combinar todas las noticias
+        const allNews = [...external, ...scraped];
         
-        // Marcar las noticias que están guardadas
-        articles.forEach((article: News) => {
-          article.isSaved = savedUrls.has(article.url);
+        // Crear un Set con las URLs de las noticias guardadas
+        const savedUrls = new Set(saved.map(n => n.url));
+        
+        // Marcar las noticias guardadas y añadir fuente para las scrapeadas
+        allNews.forEach(news => {
+          news.isSaved = savedUrls.has(news.url);
+          if (news.source?.id === 'diario-almeria') {
+            news.isLocal = true; // Marcar noticias locales
+          }
         });
 
-        return articles;
+        // Actualizar el estado
+        this.currentNews = allNews;
+        this.newsSubject.next(allNews);
+        
+        return allNews;
       }),
       catchError(error => {
         console.error('Error obteniendo noticias:', error);
         return of([]);
       })
     );
+  }
+
+  // Método para filtrar noticias localmente
+  filterNews(filter: NewsFilter): News[] {
+    return this.currentNews.filter(news => {
+      if (filter.source && news.source?.name !== filter.source) {
+        return false;
+      }
+      if (filter.searchTerm) {
+        const searchLower = filter.searchTerm.toLowerCase();
+        return (
+          news.title?.toLowerCase().includes(searchLower) ||
+          news.description?.toLowerCase().includes(searchLower)
+        );
+      }
+      return true;
+    });
   }
 
   setCurrentNews(news: News[]) {
@@ -78,17 +128,6 @@ export class NewsService {
     
     return news || null;
   }
-
-  /* getNewsById(id: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/${id}`, {
-      headers: this.getHeaders()
-    }).pipe(
-      catchError(error => {
-        console.error('Error obteniendo noticia:', error);
-        return of(null);
-      })
-    );
-  } */
 
   toggleSaveNews(news: News, save: boolean): Observable<News[]> {
     console.log('Intentando', save ? 'guardar' : 'quitar', 'noticia:', {
@@ -139,14 +178,5 @@ export class NewsService {
         this.savedNewsCache = news; // Guardar en caché
       })
     );
-  }
-
-  getFilteredNews(filter: NewsFilter): Observable<News[]> {
-    return this.http.get<News[]>(`${this.apiUrl}/news`, {
-      params: {
-        ...(filter.source && { source: filter.source }),
-        ...(filter.searchTerm && { search: filter.searchTerm })
-      }
-    });
   }
 }

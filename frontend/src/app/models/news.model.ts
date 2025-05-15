@@ -17,6 +17,7 @@ export interface News {
   publishedAt: string;
   content: string;
   isSaved?: boolean;
+  isLocal?: boolean;
 }
 
 export interface NewsFilter {
