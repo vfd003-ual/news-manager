@@ -30,33 +30,70 @@ La aplicación implementa una arquitectura de microservicios moderna y escalable
 
 ```mermaid
 graph TB
-    subgraph Cliente
-        A[Usuario] --> B[Angular Frontend]
-        B --> C[Componentes Standalone]
-        B --> D[Servicios]
-        B --> E[Guards & Interceptores]
-    end
+    subgraph "Contenedores Docker"
+        subgraph "Frontend Container"
+            A[Usuario] --> B[Angular Frontend]
+            B --> C[Componentes Standalone]
+            B --> D[Servicios]
+            B --> E[Guards & Interceptores]
+        end
 
-    subgraph "Backend API"
-        F[Express Server] --> G[Controladores]
-        F --> H[Middlewares]
-        F --> I[Servicios]
-        I --> J[Cache Layer]
+        subgraph "Backend Container"
+            F[Express Server] --> G[Controladores]
+            F --> H[Middlewares]
+            F --> I[Servicios]
+            I --> J[Cache Layer]
+            I --> W[Web Scraping Service]
+        end
+
+        subgraph "MongoDB Container"
+            L[MongoDB]
+        end
     end
 
     subgraph "Servicios Externos"
         K[NewsAPI]
-    end
-
-    subgraph "Base de Datos"
-        L[MongoDB]
+        S[Sitios Web]
     end
 
     B -- HTTP/JWT --> F
     I -- HTTP --> K
+    W -- Axios/Cheerio --> S
     F -- Mongoose --> L
     J -- Cache --> I
+
+    %% Docker Compose gestiona la red entre contenedores
+    classDef container fill:#e1f5fe,stroke:#01579b
+    class Cliente,Backend,MongoDB container
 ```
+
+### Infraestructura Docker
+
+#### Contenedores
+- **Frontend Container**: Servidor Angular con SSR
+  - Nginx como servidor web
+  - Optimización y compresión de assets
+  - Caché de estáticos
+
+- **Backend Container**: Servidor Node.js
+  - Express como framework web
+  - Servicios y controladores
+  - Sistema de caché
+  - Web Scraping con Axios/Cheerio
+
+- **MongoDB Container**: Base de datos
+  - Persistencia en volumen Docker
+  - Configuración optimizada
+  - Backups automatizados
+
+#### Características
+- Network Bridge dedicada
+- Volúmenes para persistencia
+- Variables de entorno securizadas
+- Healthchecks configurados
+- Reinicio automático
+- Logs centralizados
+
 
 ### Frontend (Puerto 4000)
 Desarrollado con Angular 19, implementa una arquitectura moderna basada en componentes.
@@ -79,6 +116,9 @@ Servidor Node.js con Express, siguiendo principios REST y clean architecture.
 #### Capas de la Aplicación
 - **Controllers**: Manejo de requests y responses
 - **Services**: Lógica de negocio y operaciones
+  - NewsService: Gestión de noticias y caché
+  - ScrapingService: Web scraping de fuentes alternativas
+  - AuthService: Autenticación y autorización
 - **Models**: Esquemas y validación de datos
 - **Middleware**: Procesamiento de peticiones
 - **Utils**: Funciones auxiliares y helpers
@@ -90,6 +130,18 @@ Servidor Node.js con Express, siguiendo principios REST y clean architecture.
 - **Rate Limiting**: Control de frecuencia de peticiones
 - **Error Handling**: Gestión centralizada de errores
 - **API Proxy**: Intermediario para NewsAPI
+
+#### Web Scraping Service
+- **Tecnologías**:
+  - Axios: Cliente HTTP para peticiones
+  - Cheerio: Parsing y manipulación DOM
+  - Queue: Sistema de colas para requests
+- **Funcionalidades**:
+  - Extracción de noticias de múltiples fuentes
+  - Normalización de datos
+  - Gestión de rate limiting
+  - Manejo de errores y reintentos
+  - Caché de resultados
 
 ### Base de Datos (MongoDB)
 Sistema de persistencia NoSQL con esquemas flexibles.
