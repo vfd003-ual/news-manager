@@ -24,33 +24,92 @@ Para ejecutar la aplicación necesitas tener instalado:
 
 ## Arquitectura
 
-La aplicación sigue una arquitectura de microservicios con tres componentes principales:
+La aplicación implementa una arquitectura de microservicios moderna y escalable, con énfasis en la separación de responsabilidades y la mantenibilidad del código.
+
+### Diagrama de Arquitectura
+
+```mermaid
+graph TB
+    subgraph Cliente
+        A[Usuario] --> B[Angular Frontend]
+        B --> C[Componentes Standalone]
+        B --> D[Servicios]
+        B --> E[Guards & Interceptores]
+    end
+
+    subgraph "Backend API"
+        F[Express Server] --> G[Controladores]
+        F --> H[Middlewares]
+        F --> I[Servicios]
+        I --> J[Cache Layer]
+    end
+
+    subgraph "Servicios Externos"
+        K[NewsAPI]
+    end
+
+    subgraph "Base de Datos"
+        L[MongoDB]
+    end
+
+    B -- HTTP/JWT --> F
+    I -- HTTP --> K
+    F -- Mongoose --> L
+    J -- Cache --> I
+```
 
 ### Frontend (Puerto 4000)
-- Desarrollado con Angular 19
-- Características:
-  - SSR (Server-Side Rendering) para mejor SEO
-  - Componentes standalone
-  - Gestión de estado eficiente
-  - Sistema de rutas protegidas
-  - Interceptores para manejo de tokens
+Desarrollado con Angular 19, implementa una arquitectura moderna basada en componentes.
+
+#### Componentes Principales
+- **Módulo Core**: Servicios singleton y componentes globales
+- **Módulos Feature**: Funcionalidades específicas modularizadas
+- **Componentes Standalone**: Arquitectura modular y eficiente
+
+#### Características Técnicas
+- **Server-Side Rendering (SSR)**: Mejora SEO y rendimiento inicial
+- **Lazy Loading**: Carga bajo demanda de módulos
+- **State Management**: Gestión reactiva del estado con RxJS
+- **Interceptores HTTP**: Manejo centralizado de peticiones
+- **Guards**: Protección de rutas y autorización
 
 ### Backend (Puerto 3000)
-- Desarrollado con Node.js y Express
-- Características:
-  - API RESTful
-  - Autenticación mediante JWT
-  - Sistema de caché para optimizar peticiones
-  - Middleware de autenticación
-  - Proxy para NewsAPI
-  - Integración con MongoDB
+Servidor Node.js con Express, siguiendo principios REST y clean architecture.
 
-### Base de Datos
-- MongoDB
-- Almacena:
-  - Información de usuarios
-  - Preferencias
-  - Noticias guardadas
+#### Capas de la Aplicación
+- **Controllers**: Manejo de requests y responses
+- **Services**: Lógica de negocio y operaciones
+- **Models**: Esquemas y validación de datos
+- **Middleware**: Procesamiento de peticiones
+- **Utils**: Funciones auxiliares y helpers
+
+#### Características Técnicas
+- **RESTful API**: Endpoints bien definidos y documentados
+- **JWT Authentication**: Seguridad basada en tokens
+- **Caching Layer**: Sistema de caché para optimizar peticiones
+- **Rate Limiting**: Control de frecuencia de peticiones
+- **Error Handling**: Gestión centralizada de errores
+- **API Proxy**: Intermediario para NewsAPI
+
+### Base de Datos (MongoDB)
+Sistema de persistencia NoSQL con esquemas flexibles.
+
+#### Características
+- **Schemas**: Modelos de datos estructurados
+- **Índices**: Optimización de consultas frecuentes
+- **Relaciones**: Referencias entre colecciones
+- **Transacciones**: Operaciones atómicas cuando necesario
+
+#### Colecciones Principales
+- **Users**: Información de usuarios y autenticación
+- **SavedNews**: Noticias guardadas por usuarios
+- **Preferences**: Configuraciones de usuario
+
+### Comunicación entre Servicios
+- **API REST**: Comunicación cliente-servidor
+- **JWT**: Tokens de autenticación
+- **HTTP/HTTPS**: Protocolo de comunicación
+- **WebSockets** (planificado): Para actualizaciones en tiempo real
 
 ## Instalación y Ejecución
 
