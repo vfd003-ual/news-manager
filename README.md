@@ -121,26 +121,137 @@ news-manager/
 │   ├── routes/            # Rutas de la API
 │   └── services/          # Servicios
 └── docker-compose.yml     # Configuración de Docker
+```
+## Modelo de Datos
+
+La aplicación implementa una estructura de datos relacional donde los usuarios pueden guardar múltiples noticias, similar a una relación "uno a muchos".
+
+### Diagrama de Relaciones
+
+```mermaid
+classDiagram
+    class User {
+        +ObjectId _id
+        +String name
+        +String email
+        +String password
+        +Date createdAt
+        +guardarNoticia()
+        +eliminarNoticia()
+    }
+
+    class SavedNews {
+        +String url
+        +String title
+        +String description
+        +Date publishedAt
+        +String source.name
+        +String urlToImage
+        +Date savedAt
+    }
+
+    class News {
+        +String source.id
+        +String source.name
+        +String author
+        +String title
+        +String description
+        +String url
+        +String urlToImage
+        +String publishedAt
+        +String content
+        +Boolean isSaved
+        +Boolean isLocal
+    }
+
+    User "1" --> "*" SavedNews : tiene
+    SavedNews --|> News : hereda de
+```
+
+### Tablas de Modelo de Datos
+
+#### Usuario (User)
+
+| Campo      | Tipo     | Descripción                    | Requerido |
+|------------|----------|--------------------------------|-----------|
+| _id        | ObjectId | ID único de MongoDB           | Sí        |
+| name       | String   | Nombre del usuario            | Sí        |
+| email      | String   | Email único del usuario       | Sí        |
+| password   | String   | Contraseña hasheada          | Sí        |
+| createdAt  | Date     | Fecha de creación            | Sí        |
+
+#### Noticia Guardada (SavedNews)
+
+| Campo       | Tipo     | Descripción                   | Requerido |
+|------------|----------|-------------------------------|-----------|
+| url        | String   | URL única de la noticia      | Sí        |
+| title      | String   | Título de la noticia         | Sí        |
+| description| String   | Descripción del contenido    | No        |
+| publishedAt| Date     | Fecha de publicación        | Sí        |
+| source.name| String   | Nombre de la fuente         | Sí        |
+| urlToImage | String   | URL de la imagen            | No        |
+| savedAt    | Date     | Fecha de guardado           | Sí        |
+
+#### Noticia (News)
+
+| Campo       | Tipo     | Descripción                   | Requerido |
+|------------|----------|-------------------------------|-----------|
+| source.id  | String   | ID de la fuente             | No        |
+| source.name| String   | Nombre de la fuente         | Sí        |
+| author     | String   | Autor del artículo          | No        |
+| title      | String   | Título del artículo         | Sí        |
+| description| String   | Descripción corta           | No        |
+| url        | String   | URL única del artículo      | Sí        |
+| urlToImage | String   | URL de la imagen            | No        |
+| publishedAt| String   | Fecha de publicación        | Sí        |
+| content    | String   | Contenido completo          | No        |
+| isSaved    | Boolean  | Estado de guardado          | No        |
+| isLocal    | Boolean  | Es noticia local            | No        |
+
+### Relaciones y Cardinalidad
+
+- Un **Usuario** puede guardar múltiples **Noticias** (1:N)
+- Cada **Noticia Guardada** pertenece a un único **Usuario** (N:1)
+- Las **Noticias Guardadas** heredan propiedades del modelo **Noticia**
+
+## Patrones de Diseño
+
+### Patrón Repository
+- Implementado en `ScrapingService` y `NewsService`
+- Abstrae el acceso a datos y la lógica de negocio
+- Proporciona una interfaz unificada para acceder a los datos
+- Facilita el cambio de fuentes de datos sin afectar la lógica de negocio
+
+### Patrón Observer
+- Utilizado en servicios Angular (`NewsService`, `AuthService`)
+- Implementa comunicación reactiva entre componentes
+- Gestiona actualizaciones en tiempo real
+- Maneja el estado de la aplicación de forma eficiente
+
+### Patrón Factory
+- Usado en la creación de instancias de noticias y usuarios
+- Centraliza la lógica de creación de objetos
+- Facilita la modificación de la lógica de creación
+
+### Patrón Middleware
+- Implementado en el backend para autenticación y validación
+- Procesa las solicitudes HTTP de forma secuencial
+- Permite la reutilización de lógica común
 
 ## API Endpoints
 
 ### Autenticación
-- `POST /api/auth/register`: Registro de nuevo usuario
-  - Body: `{ name, email, password }`
+- `POST /api/auth/register`: Registro de usuario
 - `POST /api/auth/login`: Inicio de sesión
-  - Body: `{ email, password }`
-- `GET /api/auth/user`: Obtiene información del usuario actual
-- `PUT /api/auth/user`: Actualiza información del usuario
-  - Body: `{ name, email, currentPassword?, newPassword? }`
+- `GET /api/auth/user`: Obtiene datos del usuario
+- `PUT /api/auth/user`: Actualiza datos del usuario
 
 ### Noticias
-- `GET /api/news`: Obtiene lista de noticias
-  - Query params: `{ category, query }`
-- `GET /api/news/local`: Obtiene noticias locales
+- `GET /api/news`: Lista de noticias con filtros
+- `GET /api/news/local`: Noticias locales
 
 ### Preferencias
-- `PUT /api/preferences/saved-news`: Guarda/elimina noticias
-  - Body: `{ news: NewsItem, save: boolean }`
+- `PUT /api/preferences/saved-news`: Gestiona noticias guardadas
 - `GET /api/preferences/saved-news`: Obtiene noticias guardadas
 
 ## Seguridad
@@ -168,14 +279,3 @@ La aplicación implementa varias capas de seguridad:
 - Volúmenes para persistencia segura
 - Network isolation
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
