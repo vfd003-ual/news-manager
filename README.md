@@ -344,6 +344,25 @@ classDiagram
 - Centraliza la lógica de creación de objetos
 - Facilita la modificación de la lógica de creación
 
+### Patrón MVC (Model-View-Controller)
+#### Models (MongoDB Schemas)
+- Definidos en `backend/models/`
+- `User.js`: Schema de usuarios con validación
+- `SavedNews.js`: Schema de noticias guardadas
+- Implementan la lógica de negocio y validación de datos
+
+#### Views (Angular Components)
+- Ubicados en `frontend/src/app/components/`
+- Componentes para UI: noticias, autenticación, perfil
+- Implementan la presentación y eventos de usuario
+- Standalone components para mejor modularidad
+
+#### Controllers (Express)
+- Ubicados en `backend/controllers/`
+- Manejan las peticiones HTTP y respuestas
+- Coordinan Models y Views
+- Implementan la lógica de routing y middleware
+
 ### Patrón Middleware
 - Implementado en el backend para autenticación y validación
 - Procesa las solicitudes HTTP de forma secuencial
